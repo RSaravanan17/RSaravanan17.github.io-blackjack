@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Play Blackjack!</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="background">
+    <script src="blackjack.js"></script>
+    <h1><img id="image" src="https://www.gentingcasino.com/images/uploads/games/blackjack.jpg" alt="Blackjack logo" /></h1>
+    <ul id="gameInfo"></ul>
+    <div id="hitOrStand">
+      <p style="font-size:130%;">What move do you want to take?</p>
+      <button id="hit" name="move" style="font-size:130%;" onclick="bj.moveHit()">Hit</button>
+      <button id="stand" name="move" style="font-size:130%;" onclick="bj.moveStand()">Stand</button>
+    </div>
+    <div id="deck">
+      <p>Your Cards:</p>
+      <div id="aceC" target="black">A♣</div>
+      <div id="twoC" target="black">2♣</div>
+      <div id="threeC" target="black">3♣</div>
+      <div id="fourC" target="black">4♣</div>
+      <div id="fiveC" target="black">5♣</div>
+      <div id="sixC" target="black">6♣</div>
+      <div id="sevenC" target="black">7♣</div>
+      <div id="eightC" target="black">8♣</div>
+      <div id="nineC" target="black">9♣</div>
+      <div id="tenC" target="black">10♣</div>
+      <div id="jackC" target="black">J♣</div>
+      <div id="queenC" target="black">Q♣</div>
+      <div id="kingC" target="black">K♣</div>
+
+      <div id="aceS" target="black">A♠</div>
+      <div id="twoS" target="black">2♠</div>
+      <div id="threeS" target="black">3♠</div>
+      <div id="fourS" target="black">4♠</div>
+      <div id="fiveS" target="black">5♠</div>
+      <div id="sixS" target="black">6♠</div>
+      <div id="sevenS" target="black">7♠</div>
+      <div id="eightS" target="black">8♠</div>
+      <div id="nineS" target="black">9♠</div>
+      <div id="tenS" target="black">10♠</div>
+      <div id="jackS" target="black">J♠</div>
+      <div id="queenS" target="black">Q♠</div>
+      <div id="kingS" target="black">K♠</div>
+
+      <div id="aceD" target="red">A♦</div>
+      <div id="twoD" target="red">2♦</div>
+      <div id="threeD" target="red">3♦</div>
+      <div id="fourD" target="red">4♦</div>
+      <div id="fiveD" target="red">5♦</div>
+      <div id="sixD" target="red">6♦</div>
+      <div id="sevenD" target="red">7♦</div>
+      <div id="eightD" target="red">8♦</div>
+      <div id="nineD" target="red">9♦</div>
+      <div id="tenD" target="red">10♦</div>
+      <div id="jackD" target="red">J♦</div>
+      <div id="queenD" target="red">Q♦</div>
+      <div id="kingD" target="red">K♦</div>
+
+      <div id="aceH" target="red">A♥</div>
+      <div id="twoH" target="red">2♥</div>
+      <div id="threeH" target="red">3♥</div>
+      <div id="fourH" target="red">4♥</div>
+      <div id="fiveH" target="red">5♥</div>
+      <div id="sixH" target="red">6♥</div>
+      <div id="sevenH" target="red">7♥</div>
+      <div id="eightH" target="red">8♥</div>
+      <div id="nineH" target="red">9♥</div>
+      <div id="tenH" target="red">10♥</div>
+      <div id="jackH" target="red">J♥</div>
+      <div id="queenH" target="red">Q♥</div>
+      <div id="kingH" target="red">K♥</div>
+    </div>
+  </div>
+</body>
+
+</html>
