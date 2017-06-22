@@ -1,0 +1,75 @@
+#background {
+  background: rgba(15, 130, 15, 0.75);
+  width: 830px;
+}
+
+#image {
+  border-radius: 75px;
+  background-position: left top;
+  background-repeat: repeat;
+  padding: 20px;
+  width: 300px;
+  height: 150px;
+}
+
+#hitOrStand {
+  width: 375px;
+  height: 140px;
+  background: rgba(255, 0, 0, 0.75);
+  float: left;
+}
+
+#hit {
+  display: inline-block;
+  font-family: Consolas, monospace;
+  text-align: center;
+  font-size: 30;
+}
+
+#stand {
+  display: inline-block;
+  font-family: Consolas, monospace;
+  font-size: 30;
+  text-align: center;
+}
+
+#deck {
+  font-size: 25px;
+  width: 455px;
+  height: 140px;
+  background: rgba(0, 220, 220, 0.75);
+  float: left;
+}
+
+[target="black"] {
+  width: 50px;
+  height: 50px;
+  color: black;
+  float: left;
+  display: none;
+}
+
+[target="red"] {
+  width: 50px;
+  height: 50px;
+  color: red;
+  float: left;
+  display: none;
+}
+
+li {
+  font-size: 20;
+  font-family: Consolas, monospace;
+}
+
+p {
+  font-family: Consolas, monospace;
+  font-size: 18;
+  text-align: center;
+}
+
+div {
+  font-family: Consolas, monospace;
+  font-size: 18;
+  text-align: center;
+}
