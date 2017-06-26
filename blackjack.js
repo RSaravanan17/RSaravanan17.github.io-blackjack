@@ -1,3 +1,16 @@
+var firebase = require('firebase');
+//var firebase = new Firebase('https://blackjack-5a244.firebaseio.com/');
+//var database = firebase.database();
+var config = {
+    apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
+    authDomain: "blackjack-5a244.firebaseapp.com",
+    databaseURL: "https://blackjack-5a244.firebaseio.com",
+    projectId: "blackjack-5a244",
+    storageBucket: "",
+    messagingSenderId: "841464784637"
+};
+firebase.initializeApp(config);
+
 var bj = (function() {
   var cardNums;
   var deck;
@@ -7,31 +20,79 @@ var bj = (function() {
   var playerHand;
   var gameOver;
   var savedPlayers = [{
-    currentPlayer: "Test1",
+    playerName: "Test",
     savedWins: 5
   }];
   var success = false;
+  var nameOfPlayer;
   var wins = 0;
   var playerIndex;
 
   function savePlayerData() {
-    let playerName = window.prompt("What's your name?");
+    let currentPlayer = window.prompt("What's your name?");
 
-    let asdf = savedPlayers.find(x => x.currentPlayer === playerName);
-    success = asdf === undefined ? false : true;
+    success = savedPlayers.find(x => x.playerName === currentPlayer) === undefined ? false : true;
     if (!success) {
       savedPlayers.push({
-        currentPlayer: playerName,
+        playerName: currentName,
         savedWins: 0
       });
       localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
+      firebase.database().ref().update({
+        "savedPlayers": savedPlayers
+      });
       playerIndex = savedPlayers.length - 1;
-      window.alert("Hello " + playerName + ", welcome to Blackjack! You are a new player and you have not won any games yet. In this simulation of Blackjack, the green box displays the gameplay, the red box displays the moves you can make, and the blue box displays your current hand. Enjoy!");
+      window.alert("Hello " + currentPlayer + ", welcome to Blackjack! You are a new player and you have not won any games yet. In this simulation of Blackjack, the green box displays the gameplay, the red box displays the moves you can make, and the blue box displays your current hand. Enjoy!");
     } else {
       playerIndex = savedPlayers.indexOf(asdf);
       wins = savedPlayers[playerIndex].savedWins;
-      window.alert("Hello " + playerName + ", welcome back to Blackjack! You are a returning player and you have won " + wins + " game(s).");
+      window.alert("Hello " + currentPlayer + ", welcome back to Blackjack! You are a returning player and you have won " + wins + " game(s).");
     }
+
+    /*function saveToList(event) {
+      if (nameOfPlayer.length > 0) {
+        saveToPlayerList(nameOfPlayer, wins);
+      }
+      return false;
+    };
+
+    function saveToPlayerList(playerId, winCount) {
+      // this will save data to Firebase
+      firebase.push({
+        currentPlayer: playerId,
+        savedWins: winCount
+      });
+    };
+
+    function refreshUI(list) {
+      var lis = '';
+      for (var i = 0; i < list.length; i++) {
+        lis += '<li data-key="' + list[i].key + '">' + list[i].playerName + ', ' + list[i].savedWins + '</li>';
+      };
+      document.getElementById('playerList').innerHTML = lis;
+    };
+
+    // this will get fired on inital load as well as when ever there is a change in the data
+    firebase.on("value", function(snapshot) {
+      var data = snapshot.val();
+      var list = [];
+      for (var key in data) {
+        if (data.hasOwnProperty(key)) {
+          nameOfPlayer = data[key].playerName ? data[key].playerName : '';
+          if (nameOfPlayer.trim().length > 0) {
+            list.push({
+              playerName: nameOfPlayer,
+              savedWins: data[key].savedWins,
+              key: key
+            })
+          }
+        }
+      }
+      // refresh the UI
+      refreshUI(list);
+    });
+    var userRef = firebase.database().ref('/playerName');
+    document.write(userRef);*/
   }
 
   function randomCard(deck) {
@@ -141,6 +202,9 @@ var bj = (function() {
 
       savedPlayers[playerIndex].savedWins++;
       localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
+      firebase.database().ref().update({
+        "savedPlayers": savedPlayers
+      });
     } else if (dealerScore === 21 && playerScore === 21) {
       let gameList = document.getElementById('gameInfo');
       let next = document.createElement('li');
@@ -168,6 +232,9 @@ var bj = (function() {
 
       savedPlayers[playerIndex].savedWins++;
       localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
+      firebase.database().ref().update({
+        "savedPlayers": savedPlayers
+      });
     } else {
       gameOver = false;
     }
@@ -240,6 +307,9 @@ var bj = (function() {
 
           savedPlayers[playerIndex].savedWins++;
           localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
+          firebase.database().ref().update({
+            "savedPlayers": savedPlayers
+          });
         } else if (dealerScore === playerScore) {
           let gameList = document.getElementById('gameInfo');
           let next = document.createElement('li');
@@ -275,7 +345,9 @@ var bj = (function() {
 
   window.onload = function() {
     savedPlayers = localStorage.getItem("savedPlayers");
-    savedPlayers = savedPlayers ? JSON.parse(savedPlayers) : [];
+    var userRef = firebase.database().ref('/users');
+    savedPlayers = savedPlayers ? userRef : [];
+    //savedPlayers = savedPlayers ? JSON.parse(savedPlayers) : [];
 
     savePlayerData();
     initGame();
@@ -287,4 +359,5 @@ var bj = (function() {
   };
   //localStorage.clear();
   //document.write(localStorage.getItem("savedPlayers"));
+
 })();
