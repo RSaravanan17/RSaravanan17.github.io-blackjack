@@ -1,5 +1,5 @@
-var firebase = require('firebase/app');
-require('firebase/database');
+/*var firebase = require('firebase/app');
+require('firebase/database');*/
 //var firebase = new Firebase('https://blackjack-5a244.firebaseio.com/');
 //var database = firebase.database();
 var config = {
@@ -28,24 +28,38 @@ var bj = (function() {
   var nameOfPlayer;
   var wins = 0;
   var playerIndex;
+  var uid;
 
   function savePlayerData() {
     let currentPlayer = window.prompt("What's your name?");
 
-    success = savedPlayers.find(x => x.playerName === currentPlayer) === undefined ? false : true;
+    //success = savedPlayers.find(x => x.playerName === currentPlayer) === undefined ? false : true;
+    for (var i = 0; i < savedPlayers.length; i++) {
+      if (savedPlayers[i].playerName === currentPlayer) {
+        success = true;
+      }
+    }
+
     if (!success) {
       savedPlayers.push({
-        playerName: currentName,
+        playerName: currentPlayer,
         savedWins: 0
       });
       localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
-      firebase.database().ref().update({
-        "savedPlayers": savedPlayers
+      var newPostRef = firebase.database().ref().push({
+        playerName: currentPlayer,
+        savedWins: 0
       });
+      /*firebase.database().ref().update({
+        "savedPlayers": savedPlayers
+      });*/
       playerIndex = savedPlayers.length - 1;
+      uid = newPostRef.key;
       window.alert("Hello " + currentPlayer + ", welcome to Blackjack! You are a new player and you have not won any games yet. In this simulation of Blackjack, the green box displays the gameplay, the red box displays the moves you can make, and the blue box displays your current hand. Enjoy!");
     } else {
       playerIndex = savedPlayers.indexOf(asdf);
+      //How do I access the current player's uid if he is a returning player with an existing uid?
+      postSnapshot.val().uid;
       wins = savedPlayers[playerIndex].savedWins;
       window.alert("Hello " + currentPlayer + ", welcome back to Blackjack! You are a returning player and you have won " + wins + " game(s).");
     }
@@ -91,9 +105,7 @@ var bj = (function() {
       }
       // refresh the UI
       refreshUI(list);
-    });
-    var userRef = firebase.database().ref('/playerName');
-    document.write(userRef);*/
+    });*/
   }
 
   function randomCard(deck) {
@@ -346,7 +358,7 @@ var bj = (function() {
 
   window.onload = function() {
     savedPlayers = localStorage.getItem("savedPlayers");
-    var userRef = firebase.database().ref('/users');
+    var userRef = firebase.database().ref('/users' + uid);
     savedPlayers = savedPlayers ? userRef : [];
     //savedPlayers = savedPlayers ? JSON.parse(savedPlayers) : [];
 
