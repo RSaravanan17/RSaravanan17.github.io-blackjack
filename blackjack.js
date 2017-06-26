@@ -1,13 +1,14 @@
-var firebase = require('firebase');
+var firebase = require('firebase/app');
+require('firebase/database');
 //var firebase = new Firebase('https://blackjack-5a244.firebaseio.com/');
 //var database = firebase.database();
 var config = {
-    apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
-    authDomain: "blackjack-5a244.firebaseapp.com",
-    databaseURL: "https://blackjack-5a244.firebaseio.com",
-    projectId: "blackjack-5a244",
-    storageBucket: "",
-    messagingSenderId: "841464784637"
+  apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
+  authDomain: "blackjack-5a244.firebaseapp.com",
+  databaseURL: "https://blackjack-5a244.firebaseio.com",
+  projectId: "blackjack-5a244",
+  storageBucket: "blackjack-5a244.appspot.com",
+  messagingSenderId: "841464784637"
 };
 firebase.initializeApp(config);
 
