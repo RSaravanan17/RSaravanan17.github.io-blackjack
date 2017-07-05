@@ -1,8 +1,8 @@
 {
-  "name": "bj_game",
+  "name": "node-token-jwt",
   "version": "1.0.0",
-  "description": "This is my blackjack game.",
-  "main": "index.js",
+  "description": "This is the login API for my Blackjack game.",
+  "main": "bj_login.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

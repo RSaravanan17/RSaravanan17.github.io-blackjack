@@ -12,6 +12,12 @@
   height: 150px;
 }
 
+#submit {
+  font-size: 20px;
+  font-family: Consolas, monospace;
+  text-align: center;
+}
+
 #hitOrStand {
   width: 375px;
   height: 140px;
