@@ -104,206 +104,68 @@ var bj = (function() {
     })
   }
 
-  function deal() {
-    dealerHand.push(randomCard(deck));
-    dealerHand.push(randomCard(deck));
-    playerHand.push(randomCard(deck));
-    playerHand.push(randomCard(deck));
-
-    let gameList = document.getElementById('gameInfo');
-    let next = document.createElement('li');
-    next.appendChild(document.createTextNode("One of the dealer's cards is " + dealerHand[Math.round(Math.random())] + "."));
-    gameList.appendChild(next);
-
-    let gameList1 = document.getElementById('gameInfo');
-    let next1 = document.createElement('li');
-    next1.appendChild(document.createTextNode("Your cards are " + playerHand + "."));
-    gameList1.appendChild(next1);
-    showCards();
-  }
-
-  function scoreWithoutAce(person, personScore) {
-    personScore = 0;
-    for (var i = 0; i < person.length; i++) {
-      if (person[i].includes("Two")) {
-        personScore += 2;
-      } else if (person[i].includes("Three")) {
-        personScore += 3;
-      } else if (person[i].includes("Four")) {
-        personScore += 4;
-      } else if (person[i].includes("Five")) {
-        personScore += 5;
-      } else if (person[i].includes("Six")) {
-        personScore += 6;
-      } else if (person[i].includes("Seven")) {
-        personScore += 7;
-      } else if (person[i].includes("Eight")) {
-        personScore += 8;
-      } else if (person[i].includes("Nine")) {
-        personScore += 9;
-      } else if (person[i].includes("Ten") || person[i].includes("Jack") || person[i].includes("Queen") || person[i].includes("King")) {
-        personScore += 10;
-      }
-    }
-    return personScore;
-  }
-
-  function scoreWithAce(person, personScore) {
-    for (var i = 0; i < person.length; i++) {
-      if (person[i].includes("Ace")) {
-        if (personScore <= 10) {
-          personScore += 11;
-        } else {
-          personScore += 1;
-        }
-      }
-    }
-    return personScore;
-  }
-
   function disableButtons() {
     document.getElementById("hit").disabled = true;
     document.getElementById("stand").disabled = true;
   }
 
-  function updateScore() {
-    dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
-    playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
-
-    let gameList = document.getElementById('gameInfo');
-    let next = document.createElement('li');
-    next.appendChild(document.createTextNode("Your current score is " + playerScore + "."));
-    gameList.appendChild(next);
-
-    if (playerScore > 21) {
-      let gameList = document.getElementById('gameInfo');
-      let next = document.createElement('li');
-      next.appendChild(document.createTextNode("Bust! Your score of " + playerScore + " is over 21 so the game is over. You lost."));
-      gameList.appendChild(next);
-
-      disableButtons();
-      gameOver = true;
-    } else if (dealerScore > 21) {
-      let gameList = document.getElementById('gameInfo');
-      let next = document.createElement('li');
-      next.appendChild(document.createTextNode("Congratulations! The dealer has a bust because his score of " + dealerScore + " is over 21. You win!"));
-      gameList.appendChild(next);
-
-      disableButtons();
-      gameOver = true;
-
-      savedPlayers[playerIndex].savedWins++;
-      localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
-      /*firebase.database().ref().update({
-        "savedPlayers": savedPlayers
-      });*/
-    } else if (dealerScore === 21 && playerScore === 21) {
-      let gameList = document.getElementById('gameInfo');
-      let next = document.createElement('li');
-      next.appendChild(document.createTextNode("Since you and the dealer both have a score of 21, the game ends in a tie."));
-      gameList.appendChild(next);
-
-      disableButtons();
-      gameOver = true;
-    } else if (dealerScore === 21) {
-      let gameList = document.getElementById('gameInfo');
-      let next = document.createElement('li');
-      next.appendChild(document.createTextNode("The dealer has a score of exactly 21. You lost."));
-      gameList.appendChild(next);
-
-      disableButtons();
-      gameOver = true;
-    } else if (playerScore === 21) {
-      let gameList = document.getElementById('gameInfo');
-      let next = document.createElement('li');
-      next.appendChild(document.createTextNode("Congratulations! Your score is exactly 21. You win!"));
-      gameList.appendChild(next);
-
-      disableButtons();
-      gameOver = true;
-
-      savedPlayers[playerIndex].savedWins++;
-      localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
-      /*firebase.database().ref().update({
-        "savedPlayers": savedPlayers
-      });*/
-    } else {
-      gameOver = false;
-    }
-  }
-
-  function fetchHit() {
-    return fetch('http://localhost:8080/api/hit').then(function(response) {
-      return response.json().then(function(data) {
-         return data.playerHand;
-      });
-    });
-  }
-
   function moveHit() {
-    //playerHand.push(randomCard(deck));
-    playerHand = fetchHit().then(function(result){
-      return result.playerHand;
-    });
-
-    console.log(playerHand);
-    let gameList = document.getElementById('gameInfo');
-    let next = document.createElement('li');
-    next.appendChild(document.createTextNode("You took a hit. Your cards are now " + playerHand + "."));
-    gameList.appendChild(next);
-
-    //showCards();
-    updateScore();
-  }
-
-  function dealerTurn() {
-    fetch('http://localhost:8080/api/dealerTurn').then(function(response) {
+    fetch('http://localhost:8080/api/hit').then(function(response) {
       response.json().then(function(data) {
-        if (dealerScore < 17) {
-          dealerHand = data.dealerHand;
-          dealerHit = data.dealerHit;
-          let gameList = document.getElementById('gameInfo');
-          let next = document.createElement('li');
-          next.appendChild(document.createTextNode(data.dealerMove));
-          gameList.appendChild(next);
+        let gameList = document.getElementById('gameInfo');
+        let next = document.createElement('li');
+        next.appendChild(document.createTextNode("You took a hit. Your cards are now " + JSON.stringify(data.playerHand) + ". Your score is " + data.playerScore + "."));
+        gameList.appendChild(next);
 
-          updateScore();
-        } else {
-          if (!gameOver) {
-            let gameList = document.getElementById('gameInfo');
-            let next = document.createElement('li');
-            next.appendChild(document.createTextNode("The dealer took a stand."));
-            gameList.appendChild(next);
-          }
+        data.playerHand.forEach((card) => {
+          let rank = card.slice(0, card.indexOf(" ")).toLowerCase();
+          let suit = card.slice(card.lastIndexOf(" ") + 1, card.lastIndexOf(" ") + 2);
+          let cardId = rank + suit;
+          let cardDiv = document.getElementById(cardId);
+          cardDiv.style.display = 'block';
+        })
+
+        if (data.gameOver) {
+          let gameList1 = document.getElementById('gameInfo');
+          let next1 = document.createElement('li');
+          next1.appendChild(document.createTextNode(data.gameState));
+          gameList1.appendChild(next1);
+
+          disableButtons();
         }
       });
-    });
-    /*dealerHit ?
-      return true: return false;*/
-    return dealerHit;
-  }
-
-  function fetchStand() {
-    return fetch('http://localhost:8080/api/stand').then(function(response) {
-      return response.json().then(function(data) {
-        return data.stand;
-      })
     });
   }
 
   function moveStand() {
-    if (!gameOver) {
-      var stand = fetchStand().then(function(result){
-        return result;
+      fetch('http://localhost:8080/api/stand').then(function(response) {
+        response.json().then(function(data) {
+            let gameList = document.getElementById('gameInfo');
+            let next = document.createElement('li');
+            next.appendChild(document.createTextNode(data.stand));
+            gameList.appendChild(next);
+
+              fetch('http://localhost:8080/api/dealerTurn').then(function(response) {
+                response.json().then(function(data) {
+                  if (data.gameOver === true) {
+                    let gameList = document.getElementById('gameInfo');
+                    let next = document.createElement('li');
+                    next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s). The game is over. " + data.gameState));
+                    gameList.appendChild(next);
+                  }
+                  else {
+                    let gameList = document.getElementById('gameInfo');
+                    let next = document.createElement('li');
+                    next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s) and then stood. " + data.gameState));
+                    gameList.appendChild(next);
+                  }
+                  disableButtons();
+                })
+              });
+        })
       });
 
-      console.log(stand);
-      let gameList = document.getElementById('gameInfo');
-      let next = document.createElement('li');
-      next.appendChild(document.createTextNode(stand));
-      gameList.appendChild(next);
-
-      while (dealerScore < 17) {
+      /*while (dealerScore < 17) {
         if (!dealerTurn()) {
           updateScore();
         }
@@ -330,9 +192,9 @@ var bj = (function() {
 
           savedPlayers[playerIndex].savedWins++;
           localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
-          /*firebase.database().ref().update({
+          firebase.database().ref().update({
             "savedPlayers": savedPlayers
-          });*/
+          });
         } else if (dealerScore === playerScore) {
           let gameList = document.getElementById('gameInfo');
           let next = document.createElement('li');
@@ -344,34 +206,27 @@ var bj = (function() {
         let next = document.createElement('li');
         next.appendChild(document.createTextNode("The game is over. Reload the page to play again."));
         gameList.appendChild(next);
-      }
-    }
+      }*/
   }
 
   function initGame() {
-    return fetch('http://localhost:8080/api/init').then(function(response) {
-      return response.json().then(function(data) {
-        deck = data.deck;
-        playerHand = data.playerHand;
-        dealerHand = data.dealerHand;
-        return {deck: data.deck, playerHand: data.playerHand, dealerHand: data.dealerHand};
+    fetch('http://localhost:8080/api/init').then(function(response) {
+      response.json().then(function(data) {
+        let gameList = document.getElementById('gameInfo');
+        let next = document.createElement('li');
+        next.appendChild(document.createTextNode("Your cards are " + JSON.stringify(data.playerHand) + ". Your score is " + data.playerScore + "."));
+        gameList.appendChild(next);
+
+        data.playerHand.forEach((card) => {
+          let rank = card.slice(0, card.indexOf(" ")).toLowerCase();
+          let suit = card.slice(card.lastIndexOf(" ") + 1, card.lastIndexOf(" ") + 2);
+          let cardId = rank + suit;
+          let cardDiv = document.getElementById(cardId);
+          cardDiv.style.display = 'block';
+        })
       })
     });
-
-    /*deck = [];
-    dealerScore = 0;
-    playerScore = 0;
-    dealerHand = [];
-    playerHand = [];
-    gameOver = false;*/
   }
-
-  /*initGame().then(function(response){
-    let gameList = document.getElementById('gameInfo');
-    let next = document.createElement('li');
-    next.appendChild(document.createTextNode(playerHand + " " + dealerHand));
-    gameList.appendChild(next);
-  });*/
 
   window.onload = function() {
     savedPlayers = localStorage.getItem("savedPlayers");
@@ -380,14 +235,18 @@ var bj = (function() {
     savedPlayers = savedPlayers ? JSON.parse(savedPlayers) : [];
 
     //savePlayerData();
-    playerHand = initGame().then(function(result){
-      return result.playerHand;
-    });
-    let gameList = document.getElementById('gameInfo');
-    let next = document.createElement('li');
-    next.appendChild(document.createTextNode(playerHand + " "));
-    gameList.appendChild(next);
-    console.log(initGame());
+
+    //document.getElementById('username').disabled = true;
+    //document.getElementById('password').disabled = true;
+
+    let submit = document.getElementById('submit');
+    submit.onclick = function() {
+      savePlayerData();
+      document.getElementById('submit').disabled = true;
+      document.getElementById('username').disabled = false;
+      document.getElementById('password').disabled = false;
+      initGame();
+    };
   }
 
   return {
