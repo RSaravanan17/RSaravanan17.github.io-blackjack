@@ -9,8 +9,7 @@ var aggWins = 0;
 var timWins = 0;
 var tieCount = 0;
 var success = false;
-var dealerHit = 0;
-var gameState = "";
+var dealerHit = false;
 
 var http = require('http');
 var url = require('url');
@@ -41,6 +40,8 @@ var server = http.createServer(function (req, res) {
 });
 
 server.listen(8080);
+
+
 
 function randomCard(deck) {
   var index = Math.floor(Math.random() * deck.length);
@@ -102,21 +103,60 @@ function updateScore() {
   dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
   playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
 
-  if (playerScore > 21) {
-    gameState = "Your score of " + playerScore + " is over 21 so the game is over. You lost.";
+  console.log("Your score is " + playerScore);
+
+  /*if (playerScore > 21) {
+    console.log("Your score of " + playerScore + " is over 21 so the game is over. You lost.");
     gameOver = true;
+    aggWins++;
   } else if (dealerScore > 21) {
-    gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. You win.";
+    console.log("The dealer has a bust because his score of " + dealerScore + " is over 21. You win.");
     gameOver = true;
+    timWins++;
   } else if (dealerScore === 21 && playerScore === 21) {
-    gameState = "Since you and the dealer both have a score of 21, the game ends in a tie.";
+    console.log("Since you and the dealer both have a score of 21, the game ends in a tie.");
     gameOver = true;
+    tieCount++;
   } else if (dealerScore === 21) {
-    gameState = "The dealer has a score of exactly 21. You lost.";
+    console.log("The dealer has a score of exactly 21. You lost.");
     gameOver = true;
+    aggWins++;
   } else if (playerScore === 21) {
-    gameState = "Your score is exactly 21. You win.";
+    console.log("Your score is exactly 21. You win.");
     gameOver = true;
+    timWins++;
+  } else {
+    gameOver = false;
+  }*/
+}
+
+function updateScore1() {
+  dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
+  playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
+
+  console.log("Agg's score is " + dealerScore);
+  console.log("Tim's score is " + playerScore);
+
+  if (playerScore > 21) {
+    console.log("Tim's score of " + playerScore + " is over 21 so the game is over. Tim lost.");
+    gameOver = true;
+    aggWins++;
+  } else if (dealerScore > 21) {
+    console.log("Agg has a bust because his score of " + dealerScore + " is over 21. Tim wins.");
+    gameOver = true;
+    timWins++;
+  } else if (dealerScore === 21 && playerScore === 21) {
+    console.log("Since Agg and Tim both have a score of 21, the game ends in a tie.");
+    gameOver = true;
+    tieCount++;
+  } else if (dealerScore === 21) {
+    console.log("Agg has a score of exactly 21. Tim lost.");
+    gameOver = true;
+    aggWins++;
+  } else if (playerScore === 21) {
+    console.log("Tim's score is exactly 21. Tim wins.");
+    gameOver = true;
+    timWins++;
   } else {
     gameOver = false;
   }
@@ -124,8 +164,7 @@ function updateScore() {
 
 function moveHit() {
   playerHand.push(randomCard(deck));
-  updateScore();
-  return {gameOver: gameOver, gameState: gameState, playerHand: playerHand, playerScore: playerScore};
+  return {playerHand: playerHand};
 }
 
 function moveStand() {
@@ -133,31 +172,46 @@ function moveStand() {
 }
 
 function dealerTurn() {
-  while (dealerScore < 17) {
-      dealerHit++;
-      dealerHand.push(randomCard(deck));
-      updateScore();
-      if (gameOver)
-      {
-        return {dealerHand: dealerHand, gameOver: gameOver, dealerHit: dealerHit, gameState: gameState};
-      }
+  var dealerMove;
+  if (dealerScore < 17) {
+    dealerMove = "The dealer took a hit.";
+    dealerHand.push(randomCard(deck));
+    updateScore();
+    dealerHit = true;
+    return {dealerHand: dealerHand, dealerMove: dealerMove, dealerHit: dealerHit};
+  } else {
+    dealerMove = "The dealer took a stand.";
+    dealerHit = false;
+    return {dealerHand: dealerHand, dealerMove: dealerMove, dealerHit: dealerHit};
   }
-  return {dealerHand: dealerHand, gameOver: gameOver, dealerHit: dealerHit, gameState: bothStand()};
 }
 
-function bothStand() {
-  if (dealerScore > playerScore)
-  {
-    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". You lose.";
+function dealerTurn1() {
+  if (dealerScore < 19) {
+    console.log("Agg took a hit.");
+    dealerHand.push(randomCard(deck));
+    updateScore();
+    return true;
+  } else {
+    if (!gameOver) {
+      console.log("Agg took a stand.");
+    }
+    return false;
   }
-  else if (playerScore > dealerScore)
-  {
-    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". Congratulations, you win!";
+}
+
+function playerTurn() {
+  if (playerScore < 14) {
+    console.log("Tim took a hit.");
+    playerHand.push(randomCard(deck));
+    updateScore();
+    return true;
+  } else {
+    if (!gameOver) {
+      console.log("Tim took a stand.");
+    }
+    return false;
   }
-  else if (playerScore === dealerScore) {
-    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". The game ends in a tie."
-  }
-  return gameState;
 }
 
 function initGame() {
@@ -178,7 +232,7 @@ function initGame() {
   deal();
   updateScore();
   let sessId = new Date().getTime();
-  return {sessId: sessId, playerHand: playerHand, playerScore: playerScore, dealerHand: dealerHand};
+  return {sessId: sessId, deck: deck, playerHand: playerHand, dealerHand: dealerHand};
 }
 
 /*function playGame() {
