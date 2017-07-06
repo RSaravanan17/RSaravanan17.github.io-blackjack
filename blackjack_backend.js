@@ -5,34 +5,32 @@ var playerScore;
 var dealerHand = [];
 var playerHand = [];
 var gameOver;
-var aggWins = 0;
-var timWins = 0;
-var tieCount = 0;
 var success = false;
 var dealerHit = 0;
-var gameState = "";
 
 var http = require('http');
 var url = require('url');
 var Storage = require('node-storage');
-var store = new Storage ('myStorage');
+var store = new Storage('myStorage');
 
-var server = http.createServer(function (req, res) {
+var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
   var result;
 
   if (/^\/api\/init/.test(req.url)) {
-    result = initGame();
+    result = initGame(req.url);
   } else if (/^\/api\/hit/.test(req.url)) {
-    result = moveHit();
+    result = moveHit(req.url);
   } else if (/^\/api\/stand/.test(req.url)) {
-    result = moveStand();
-  } else if (/^\/api\/dealerTurn/.test(req.url)) {
-    result = dealerTurn();
+    result = moveStand(req.url);
+  } else if (/^\/api\/login/.test(req.url)) {
+    result = login(req.url);
   }
 
   if (result) {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
     res.end(JSON.stringify(result));
   } else {
     res.writeHead(404);
@@ -42,21 +40,36 @@ var server = http.createServer(function (req, res) {
 
 server.listen(8080);
 
-function randomCard(deck) {
-  var index = Math.floor(Math.random() * deck.length);
-  var newCard = deck[index];
-  deck.splice(index, 1);
-  return newCard;
-}
+function login(url) {
+  let statement = "";
+  let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
+  let password = url.slice(url.indexOf('password=') + 9);
+  let sessId = JSON.stringify(new Date().getTime());
+  let userData = store.get(username);
+  if (userData) {
+    if (userData.pw === password) {
+      statement = "Welcome back to Blackjack! You have " + store.get(username + '.win') + " win(s) and " + store.get(username + '.loss') + " loss(es).";
+    } else {
+      statement = "Your password is invalid. Refresh the page and try again." + password + " / " + userData.pw;
+    }
+  } else {
+    userData = {
+      un: username,
+      pw: password,
+      sessId: sessId,
+      win: 0,
+      loss: 0
+    };
+    store.put(username, userData);
+    statement = "Welcome to Blackjack! You can choose to 'hit' or 'stand' in the red area and you can see your hand in the blue area.";
+  }
 
-function deal() {
-  dealerHand.push(randomCard(deck));
-  dealerHand.push(randomCard(deck));
-  playerHand.push(randomCard(deck));
-  playerHand.push(randomCard(deck));
-
-  console.log("Player Agg's cards are " + dealerHand);
-  console.log("Player Tim's cards are " + playerHand);
+  store.put(sessId, userData);
+  return {
+    user: username,
+    statement: statement,
+    sessId: sessId
+  };
 }
 
 function scoreWithoutAce(person, personScore) {
@@ -98,7 +111,11 @@ function scoreWithAce(person, personScore) {
   return personScore;
 }
 
-function updateScore() {
+function updateScore(username) {
+  let gameState = "";
+  let tie = false;
+  let win = false;
+  let userData = JSON.parse(store.get(username));
   dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
   playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
 
@@ -108,59 +125,111 @@ function updateScore() {
   } else if (dealerScore > 21) {
     gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. You win.";
     gameOver = true;
+    win = true;
   } else if (dealerScore === 21 && playerScore === 21) {
     gameState = "Since you and the dealer both have a score of 21, the game ends in a tie.";
     gameOver = true;
+    tie = true;
   } else if (dealerScore === 21) {
     gameState = "The dealer has a score of exactly 21. You lost.";
     gameOver = true;
   } else if (playerScore === 21) {
     gameState = "Your score is exactly 21. You win.";
     gameOver = true;
+    win = true;
   } else {
     gameOver = false;
   }
+  if (gameOver && !tie) {
+    if (win) {
+      userData.win++;
+    } else {
+      userData.loss++;
+    }
+    store.put(username, JSON.stringify(userData));
+  }
 }
 
-function moveHit() {
+function randomCard(deck) {
+  var index = Math.floor(Math.random() * deck.length);
+  var newCard = deck[index];
+  deck.splice(index, 1);
+  return newCard;
+}
+
+function deal(username) {
+  dealerHand.push(randomCard(deck));
+  dealerHand.push(randomCard(deck));
   playerHand.push(randomCard(deck));
-  updateScore();
-  return {gameOver: gameOver, gameState: gameState, playerHand: playerHand, playerScore: playerScore};
+  playerHand.push(randomCard(deck));
+  updateScore(username);
 }
 
-function moveStand() {
-  return {stand: "You took a stand."};
+function moveHit(url) {
+  let sessId = url.slice(url.indexOf('sessId=') + 7);
+  let userData = JSON.parse(store.get(sessId));
+  playerHand.push(randomCard(deck));
+  updateScore(userData.username);
+  return {
+    gameOver: gameOver,
+    gameState: gameState,
+    playerHand: playerHand,
+    playerScore: playerScore
+  };
 }
 
-function dealerTurn() {
+function moveStand(url) {
+  let sessId = url.slice(url.indexOf('sessId=') + 7);
+  let userData = JSON.parse(store.get(sessId));
   while (dealerScore < 17) {
-      dealerHit++;
-      dealerHand.push(randomCard(deck));
-      updateScore();
-      if (gameOver)
-      {
-        return {dealerHand: dealerHand, gameOver: gameOver, dealerHit: dealerHit, gameState: gameState};
-      }
+    dealerHit++;
+    dealerHand.push(randomCard(deck));
+    updateScore(userData.username);
+    if (gameOver) {
+      return {
+        stand: "You took a stand."
+        dealerHand: dealerHand,
+        gameOver: gameOver,
+        dealerHit: dealerHit,
+        gameState: gameState
+      };
+    }
   }
-  return {dealerHand: dealerHand, gameOver: gameOver, dealerHit: dealerHit, gameState: bothStand()};
+  return {
+    stand: "You took a stand."
+    dealerHand: dealerHand,
+    gameOver: gameOver,
+    dealerHit: dealerHit,
+    gameState: bothStand(userData.username)
+  };
 }
 
-function bothStand() {
-  if (dealerScore > playerScore)
-  {
+function bothStand(username) {
+  let userData = JSON.parse(store.get(username));
+  let gameState = "";
+  let win = false;
+  let tie = false;
+  if (dealerScore > playerScore) {
     gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". You lose.";
-  }
-  else if (playerScore > dealerScore)
-  {
+  } else if (playerScore > dealerScore) {
     gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". Congratulations, you win!";
+    win = true;
+  } else if (playerScore === dealerScore) {
+    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". The game ends in a tie.";
+    tie = true;
   }
-  else if (playerScore === dealerScore) {
-    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". The game ends in a tie."
+  if (win) {
+    userData.win++;
+  } else if (!tie) {
+    userData.loss++;
   }
+  store.put(username, JSON.stringify(userData));
   return gameState;
 }
 
-function initGame() {
+function initGame(url) {
+  let sessId = url.slice(url.indexOf('sessId=') + 7);
+  let userData = JSON.parse(store.get(sessId));
   cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
   deck = [];
   dealerScore = 0;
@@ -174,44 +243,11 @@ function initGame() {
     deck.push(cardNums[i] + " of Diamonds");
     deck.push(cardNums[i] + " of Hearts");
   }
-  console.log("-----NEW GAME-----");
-  deal();
-  updateScore();
-  let sessId = new Date().getTime();
-  return {sessId: sessId, playerHand: playerHand, playerScore: playerScore, dealerHand: dealerHand};
+  deal(userData.username);
+  updateScore(userData.username);
+  return {
+    playerHand: playerHand,
+    playerScore: playerScore,
+    dealerHand: dealerHand
+  };
 }
-
-/*function playGame() {
-  initGame();
-  if (!gameOver) {
-    while (playerScore < 14) {
-      if (!playerTurn()) {
-        updateScore();
-      }
-    }
-    console.log("Tim took a stand.");
-    while (dealerScore < 17) {
-      if (!dealerTurn()) {
-        updateScore();
-      }
-    }
-    if (!gameOver) {
-      console.log("Agg took a stand.");
-      if (dealerScore > playerScore) {
-        console.log("Tim and Agg both stood. Agg's final score is " + dealerScore + " and Tim's final score is " + playerScore + ". Tim lost.");
-        aggWins++;
-      } else if (dealerScore < playerScore) {
-        console.log("Tim and Agg both stood. Agg's final score is " + dealerScore + " and Tim's final score is " + playerScore + ". Tim wins.");
-        timWins++;
-      } else if (dealerScore === playerScore) {
-        console.log("Tim and Agg both stood. Agg's final score is " + dealerScore + " and Tim's final score is " + playerScore + ". The game ends in a tie.");
-        tieCount++;
-      }
-    }
-  }
-}*/
-
-/*for (var i = 0; i < 100000; i++) {
-  playGame();
-}
-console.log("Game percetages: Agg - " + aggWins / 100000 * 100 + ", Tim - " + timWins / 100000 * 100 + ", ties - " + tieCount / 100000 * 100);*/

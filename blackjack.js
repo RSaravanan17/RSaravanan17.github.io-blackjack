@@ -14,58 +14,25 @@ firebase.initializeApp(config);*/
 
 var bj = (function() {
   var cardNums;
-  var deck;
-  var dealerScore;
-  var playerScore;
-  var dealerHand;
-  var playerHand;
-  var gameOver;
-  var savedPlayers = [{
-    playerName: "Test",
-    savedWins: 5
-  }];
   var success = false;
-  var dealerHit = false;
-  //var nameOfPlayer;
-  var wins = 0;
-  var playerIndex;
-  //var uid;
 
   function savePlayerData() {
     let currentPlayer = document.getElementById("username").value;
     let currentPassword = document.getElementById("password").value;
 
-    console.log(currentPlayer + " " + currentPassword);
-    /*//success = savedPlayers.find(x => x.playerName === currentPlayer) === undefined ? false : true;
-    for (var i = 0; i < savedPlayers.length; i++) {
-      if (savedPlayers[i].playerName === currentPlayer) {
-        success = true;
-        playerIndex = i;
-      }
-    }
+    fetch('http://localhost:8080/api/login?username=' + currentPlayer + '&password=' + currentPassword).then(function(response) {
+      response.json().then(function(data) {
+        let gameList = document.getElementById('gameInfo');
+        let next = document.createElement('li');
+        next.appendChild(document.createTextNode("Hello " + data.user + "! " + data.statement));
+        gameList.appendChild(next);
 
-    if (!success) {
-      savedPlayers.push({
-        playerName: currentPlayer,
-        savedWins: 0
-      });
-      localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
-      //var newPostRef = firebase.database().ref().push({
-      //  playerName: currentPlayer,
-      //  savedWins: 0
-      //});
-      //firebase.database().ref().update({
-      //  "savedPlayers": savedPlayers
-      //});
-      playerIndex = savedPlayers.length - 1;
-      //uid = newPostRef.key;
-      window.alert("Hello " + currentPlayer + ", welcome to Blackjack! You are a new player and you have not won any games yet. In this simulation of Blackjack, the green box displays the gameplay, the red box displays the moves you can make, and the blue box displays your current hand. Enjoy!");
-    } else {
-      //How do I access the current player's uid if he is a returning player with an existing uid?
-      //postSnapshot.val().uid;
-      wins = savedPlayers[playerIndex].savedWins;
-      window.alert("Hello " + currentPlayer + ", welcome back to Blackjack! You are a returning player and you have won " + wins + " game(s).");
-    }*/
+        let sessIdDisp = document.getElementById('sessionId');
+        let sid = document.createElement('p');
+        sid.appendChild(document.createTextNode("Session ID: " + data.sessId));
+        sessIdDisp.appendChild(sid);
+      })
+    });
   }
 
   /*function createCards() {
@@ -110,7 +77,8 @@ var bj = (function() {
   }
 
   function moveHit() {
-    fetch('http://localhost:8080/api/hit').then(function(response) {
+    let sessId = document.getElementById('sessionId').innerHTML;
+    fetch('http://localhost:8080/api/hit?sessId=' + sessId).then(function(response) {
       response.json().then(function(data) {
         let gameList = document.getElementById('gameInfo');
         let next = document.createElement('li');
@@ -138,79 +106,33 @@ var bj = (function() {
   }
 
   function moveStand() {
-      fetch('http://localhost:8080/api/stand').then(function(response) {
-        response.json().then(function(data) {
-            let gameList = document.getElementById('gameInfo');
-            let next = document.createElement('li');
-            next.appendChild(document.createTextNode(data.stand));
-            gameList.appendChild(next);
-
-              fetch('http://localhost:8080/api/dealerTurn').then(function(response) {
-                response.json().then(function(data) {
-                  if (data.gameOver === true) {
-                    let gameList = document.getElementById('gameInfo');
-                    let next = document.createElement('li');
-                    next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s). The game is over. " + data.gameState));
-                    gameList.appendChild(next);
-                  }
-                  else {
-                    let gameList = document.getElementById('gameInfo');
-                    let next = document.createElement('li');
-                    next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s) and then stood. " + data.gameState));
-                    gameList.appendChild(next);
-                  }
-                  disableButtons();
-                })
-              });
-        })
-      });
-
-      /*while (dealerScore < 17) {
-        if (!dealerTurn()) {
-          updateScore();
-        }
-      }
-
-      if (!gameOver) {
+    let sessId = document.getElementById('sessionId').innerHTML;
+    fetch('http://localhost:8080/api/stand?sessId=' + sessId).then(function(response) {
+      response.json().then(function(data) {
         let gameList1 = document.getElementById('gameInfo');
         let next1 = document.createElement('li');
-        next1.appendChild(document.createTextNode("The dealer took a stand"));
+        next1.appendChild(document.createTextNode(data.stand));
         gameList1.appendChild(next1);
 
-        disableButtons();
-
-        if (dealerScore > playerScore) {
+        if (data.gameOver === true) {
           let gameList = document.getElementById('gameInfo');
           let next = document.createElement('li');
-          next.appendChild(document.createTextNode("Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". You lose."));
+          next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s). The game is over. " + data.gameState));
           gameList.appendChild(next);
-        } else if (dealerScore < playerScore) {
+        } else {
           let gameList = document.getElementById('gameInfo');
           let next = document.createElement('li');
-          next.appendChild(document.createTextNode("Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". Congratulations, you win!"));
-          gameList.appendChild(next);
-
-          savedPlayers[playerIndex].savedWins++;
-          localStorage.setItem("savedPlayers", JSON.stringify(savedPlayers));
-          firebase.database().ref().update({
-            "savedPlayers": savedPlayers
-          });
-        } else if (dealerScore === playerScore) {
-          let gameList = document.getElementById('gameInfo');
-          let next = document.createElement('li');
-          next.appendChild(document.createTextNode("Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". The game ends in a tie."));
+          next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s) and then stood. " + data.gameState));
           gameList.appendChild(next);
         }
-      } else {
-        let gameList = document.getElementById('gameInfo');
-        let next = document.createElement('li');
-        next.appendChild(document.createTextNode("The game is over. Reload the page to play again."));
-        gameList.appendChild(next);
-      }*/
+        disableButtons();
+      })
+    });
   }
 
   function initGame() {
-    fetch('http://localhost:8080/api/init').then(function(response) {
+    let sessId = document.getElementById('sessionId').innerHTML;
+    fetch('http://localhost:8080/api/init?sessId=' + sessId).then(function(response) {
       response.json().then(function(data) {
         let gameList = document.getElementById('gameInfo');
         let next = document.createElement('li');
