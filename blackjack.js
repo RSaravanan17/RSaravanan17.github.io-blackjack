@@ -13,9 +13,6 @@ require('firebase/database');*/
 firebase.initializeApp(config);*/
 
 var bj = (function() {
-  var cardNums;
-  var success = false;
-
   function savePlayerData() {
     let currentPlayer = document.getElementById("username").value;
     let currentPassword = document.getElementById("password").value;
@@ -27,47 +24,76 @@ var bj = (function() {
         next.appendChild(document.createTextNode("Hello " + data.user + "! " + data.statement));
         gameList.appendChild(next);
 
-        let sessIdDisp = document.getElementById('sessionId');
-        let sid = document.createElement('p');
-        sid.appendChild(document.createTextNode("Session ID: " + data.sessId));
-        sessIdDisp.appendChild(sid);
+        //let sessIdDisp = document.getElementById('sessionId');
+        document.getElementById('sessionId').innerHTML = "Session ID: " + data.sessId;
+        //sessIdDisp.appendChild(document.createTextNode("Session ID: " + data.sessId));
       })
     });
   }
 
   /*function createCards() {
-    cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
+    let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
+    let cardValues = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
     var divDeck = document.getElementById("deck");
     for (var i = 0; i < 49; i++) {
-      var divCard = document.createElement("div");
-      divCard.setAttribute("id", cardNums[i].toLowerCase() + "C");
-      divCard.setAttribute("target", "black");
-      divDeck.appendChild(divCard);
+      let divCard;
+      for (var j = 0; j < 13; i++) {
+        divCard = document.createElement("div");
+        divCard.setAttribute("id", cardNums[i].toLowerCase() + "C");
+        divCard.setAttribute("target", "black");
+        divCard.appendChild(document.createTextNode(cardValues[j] + "♣"));
+        divDeck.appendChild(divCard);
+      }
 
-      divCard = document.createElement("div");
-      divCard.setAttribute("id", cardNums[i].toLowerCase() + "S");
-      divCard.setAttribute("target", "black");
-      divDeck.appendChild(divCard);
+      for (var j = 0; j < 13; i++) {
+        divCard = document.createElement("div");
+        divCard.setAttribute("id", cardNums[i].toLowerCase() + "S");
+        divCard.setAttribute("target", "black");
+        divCard.appendChild(document.createTextNode(cardValues[j] + "♠"));
+        divDeck.appendChild(divCard);
+      }
 
-      divCard = document.createElement("div");
-      divCard.setAttribute("id", cardNums[i].toLowerCase() + "D");
-      divCard.setAttribute("target", "red");
-      divDeck.appendChild(divCard);
+      for (var j = 0; j < 13; i++) {
+        divCard = document.createElement("div");
+        divCard.setAttribute("id", cardNums[i].toLowerCase() + "D");
+        divCard.setAttribute("target", "red");
+        divCard.appendChild(document.createTextNode(cardValues[j] + "♦"));
+        divDeck.appendChild(divCard);
+      }
 
-      divCard = document.createElement("div");
-      divCard.setAttribute("id", cardNums[i].toLowerCase() + "H");
-      divCard.setAttribute("target", "red");
-      divDeck.appendChild(divCard);
+      for (var j = 0; j < 13; i++) {
+        divCard = document.createElement("div");
+        divCard.setAttribute("id", cardNums[i].toLowerCase() + "H");
+        divCard.setAttribute("target", "red");
+        divCard.appendChild(document.createTextNode(cardValues[j] + "♥"));
+        divDeck.appendChild(divCard);
+      }
     }
   }*/
 
-  function showCards() {
+  function showCards(playerHand) {
     playerHand.forEach((card) => {
-      let rank = card.slice(0, card.indexOf(" ")).toLowerCase();
+      let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
+      let cardValues = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+
+      let rank = card.slice(0, card.indexOf(" "));
+      let suit = card.slice(card.lastIndexOf(" ") + 1, card.lastIndexOf(" ") + 2);
+      let cardId = rank.toLowerCase() + suit;
+      let color = suit === "C" || "S" ? "black" : "red";
+      let cardName = cardValues[cardNums.indexOf(rank)];
+      let symbol = suit === "C" ? "♣" : suit === "S" ? "♠" : suit === "D" ? "♦" : "♥";
+
+      divCard = document.createElement("div");
+      divCard.setAttribute("id", cardId);
+      divCard.setAttribute("target", color);
+      divCard.appendChild(document.createTextNode(cardName + symbol));
+      divDeck.appendChild(divCard);
+
+      /*let rank = card.slice(0, card.indexOf(" ")).toLowerCase();
       let suit = card.slice(card.lastIndexOf(" ") + 1, card.lastIndexOf(" ") + 2);
       let cardId = rank + suit;
       let cardDiv = document.getElementById(cardId);
-      cardDiv.style.display = 'block';
+      cardDiv.style.display = 'block';*/
     })
   }
 
@@ -85,13 +111,14 @@ var bj = (function() {
         next.appendChild(document.createTextNode("You took a hit. Your cards are now " + JSON.stringify(data.playerHand) + ". Your score is " + data.playerScore + "."));
         gameList.appendChild(next);
 
-        data.playerHand.forEach((card) => {
+        /*data.playerHand.forEach((card) => {
           let rank = card.slice(0, card.indexOf(" ")).toLowerCase();
           let suit = card.slice(card.lastIndexOf(" ") + 1, card.lastIndexOf(" ") + 2);
           let cardId = rank + suit;
           let cardDiv = document.getElementById(cardId);
           cardDiv.style.display = 'block';
-        })
+        })*/
+        showCards(data.playerHand);
 
         if (data.gameOver) {
           let gameList1 = document.getElementById('gameInfo');
@@ -114,7 +141,7 @@ var bj = (function() {
         next1.appendChild(document.createTextNode(data.stand));
         gameList1.appendChild(next1);
 
-        if (data.gameOver === true) {
+        if (data.gameOver) {
           let gameList = document.getElementById('gameInfo');
           let next = document.createElement('li');
           next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s). The game is over. " + data.gameState));
@@ -139,24 +166,21 @@ var bj = (function() {
         next.appendChild(document.createTextNode("Your cards are " + JSON.stringify(data.playerHand) + ". Your score is " + data.playerScore + "."));
         gameList.appendChild(next);
 
-        data.playerHand.forEach((card) => {
+        /*data.playerHand.forEach((card) => {
           let rank = card.slice(0, card.indexOf(" ")).toLowerCase();
           let suit = card.slice(card.lastIndexOf(" ") + 1, card.lastIndexOf(" ") + 2);
           let cardId = rank + suit;
           let cardDiv = document.getElementById(cardId);
           cardDiv.style.display = 'block';
-        })
+        })*/
+        showCards(data.playerHand);
       })
     });
   }
 
   window.onload = function() {
-    savedPlayers = localStorage.getItem("savedPlayers");
     //var userRef = firebase.database().ref('/users' + uid);
     //savedPlayers = savedPlayers ? userRef : [];
-    savedPlayers = savedPlayers ? JSON.parse(savedPlayers) : [];
-
-    //savePlayerData();
 
     //document.getElementById('username').disabled = true;
     //document.getElementById('password').disabled = true;
@@ -175,7 +199,4 @@ var bj = (function() {
     "moveHit": moveHit,
     "moveStand": moveStand
   };
-  //localStorage.clear();
-  //document.write(localStorage.getItem("savedPlayers"));
-
 })();

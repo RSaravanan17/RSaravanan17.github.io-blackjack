@@ -1,12 +1,10 @@
-var cardNums;
 var deck = [];
 var dealerScore;
 var playerScore;
 var dealerHand = [];
 var playerHand = [];
 var gameOver;
-var success = false;
-var dealerHit = 0;
+var gameState = "";
 
 var http = require('http');
 var url = require('url');
@@ -111,34 +109,46 @@ function scoreWithAce(person, personScore) {
   return personScore;
 }
 
-function updateScore(username) {
-  let gameState = "";
+function updateScore(username, bothStand) {
   let tie = false;
   let win = false;
   let userData = JSON.parse(store.get(username));
   dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
   playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
 
-  if (playerScore > 21) {
-    gameState = "Your score of " + playerScore + " is over 21 so the game is over. You lost.";
+  if (bothStand) {
     gameOver = true;
-  } else if (dealerScore > 21) {
-    gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. You win.";
-    gameOver = true;
-    win = true;
-  } else if (dealerScore === 21 && playerScore === 21) {
-    gameState = "Since you and the dealer both have a score of 21, the game ends in a tie.";
-    gameOver = true;
-    tie = true;
-  } else if (dealerScore === 21) {
-    gameState = "The dealer has a score of exactly 21. You lost.";
-    gameOver = true;
-  } else if (playerScore === 21) {
-    gameState = "Your score is exactly 21. You win.";
-    gameOver = true;
-    win = true;
+    if (dealerScore > playerScore) {
+      gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". You lose.";
+    } else if (playerScore > dealerScore) {
+      gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". Congratulations, you win!";
+      win = true;
+    } else if (playerScore === dealerScore) {
+      gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". The game ends in a tie.";
+      tie = true;
+    }
   } else {
-    gameOver = false;
+    if (playerScore > 21) {
+      gameState = "Your score of " + playerScore + " is over 21 so the game is over. You lost.";
+      gameOver = true;
+    } else if (dealerScore > 21) {
+      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. You win.";
+      gameOver = true;
+      win = true;
+    } else if (dealerScore === 21 && playerScore === 21) {
+      gameState = "Since you and the dealer both have a score of 21, the game ends in a tie.";
+      gameOver = true;
+      tie = true;
+    } else if (dealerScore === 21) {
+      gameState = "The dealer has a score of exactly 21. You lost.";
+      gameOver = true;
+    } else if (playerScore === 21) {
+      gameState = "Your score is exactly 21. You win.";
+      gameOver = true;
+      win = true;
+    } else {
+      gameOver = false;
+    }
   }
   if (gameOver && !tie) {
     if (win) {
@@ -146,8 +156,9 @@ function updateScore(username) {
     } else {
       userData.loss++;
     }
-    store.put(username, JSON.stringify(userData));
   }
+  store.put(username, JSON.stringify(userData));
+  store.put(sessId, JSON.stringify(userData));
 }
 
 function randomCard(deck) {
@@ -162,14 +173,14 @@ function deal(username) {
   dealerHand.push(randomCard(deck));
   playerHand.push(randomCard(deck));
   playerHand.push(randomCard(deck));
-  updateScore(username);
+  updateScore(username, false);
 }
 
 function moveHit(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7);
   let userData = JSON.parse(store.get(sessId));
   playerHand.push(randomCard(deck));
-  updateScore(userData.username);
+  updateScore(userData.username, false);
   return {
     gameOver: gameOver,
     gameState: gameState,
@@ -181,30 +192,30 @@ function moveHit(url) {
 function moveStand(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7);
   let userData = JSON.parse(store.get(sessId));
+  let dealerHit = 0;
   while (dealerScore < 17) {
     dealerHit++;
     dealerHand.push(randomCard(deck));
-    updateScore(userData.username);
+    updateScore(userData.username, false);
     if (gameOver) {
       return {
-        stand: "You took a stand."
-        dealerHand: dealerHand,
+        stand: "You took a stand.",
         gameOver: gameOver,
         dealerHit: dealerHit,
         gameState: gameState
       };
     }
   }
+  updateScore(userData.username, true);
   return {
-    stand: "You took a stand."
-    dealerHand: dealerHand,
+    stand: "You took a stand.",
     gameOver: gameOver,
     dealerHit: dealerHit,
-    gameState: bothStand(userData.username)
+    gameState: gameState
   };
 }
 
-function bothStand(username) {
+/*function bothStand(username) {
   let userData = JSON.parse(store.get(username));
   let gameState = "";
   let win = false;
@@ -224,13 +235,15 @@ function bothStand(username) {
     userData.loss++;
   }
   store.put(username, JSON.stringify(userData));
+  store.put(sessId, JSON.stringify(userData));
+
   return gameState;
-}
+}*/
 
 function initGame(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7);
   let userData = JSON.parse(store.get(sessId));
-  cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
+  let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
   deck = [];
   dealerScore = 0;
   playerScore = 0;
@@ -247,7 +260,6 @@ function initGame(url) {
   updateScore(userData.username);
   return {
     playerHand: playerHand,
-    playerScore: playerScore,
-    dealerHand: dealerHand
+    playerScore: playerScore
   };
 }
