@@ -38,8 +38,7 @@ var server = http.createServer(function(req, res) {
 
 server.listen(8080);
 
-function login(url) {
-  let statement = "";
+function login(url) {let statement = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
   let password = url.slice(url.indexOf('password=') + 9);
   let sessId = JSON.stringify(new Date().getTime());
@@ -62,9 +61,14 @@ function login(url) {
     statement = "Welcome to Blackjack! You can choose to 'hit' or 'stand' in the red area and you can see your hand in the blue area.";
   }
 
+  console.log(sessId)
+  console.log("-----")
   store.put(sessId, userData);
+  console.log(JSON.stringify(store.get(sessId)));
+  console.log("-----")
   return {
     user: username,
+    pass: password,
     statement: statement,
     sessId: sessId
   };
@@ -109,10 +113,10 @@ function scoreWithAce(person, personScore) {
   return personScore;
 }
 
-function updateScore(username, bothStand) {
+function updateScore(username, bothStand, sessId) {
   let tie = false;
   let win = false;
-  let userData = JSON.parse(store.get(username));
+  let userData = store.get(username);
   dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
   playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
 
@@ -157,8 +161,8 @@ function updateScore(username, bothStand) {
       userData.loss++;
     }
   }
-  store.put(username, JSON.stringify(userData));
-  store.put(sessId, JSON.stringify(userData));
+  store.put(username, userData);
+  store.put(sessId, userData);
 }
 
 function randomCard(deck) {
@@ -168,19 +172,19 @@ function randomCard(deck) {
   return newCard;
 }
 
-function deal(username) {
+function deal(username, sessId) {
   dealerHand.push(randomCard(deck));
   dealerHand.push(randomCard(deck));
   playerHand.push(randomCard(deck));
   playerHand.push(randomCard(deck));
-  updateScore(username, false);
+  updateScore(username, false, sessId);
 }
 
 function moveHit(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7);
-  let userData = JSON.parse(store.get(sessId));
+  let userData = store.get(sessId);
   playerHand.push(randomCard(deck));
-  updateScore(userData.username, false);
+  updateScore(userData.un, false, sessId);
   return {
     gameOver: gameOver,
     gameState: gameState,
@@ -191,12 +195,12 @@ function moveHit(url) {
 
 function moveStand(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7);
-  let userData = JSON.parse(store.get(sessId));
+  let userData = store.get(sessId);
   let dealerHit = 0;
   while (dealerScore < 17) {
     dealerHit++;
     dealerHand.push(randomCard(deck));
-    updateScore(userData.username, false);
+    updateScore(userData.un, false, sessId);
     if (gameOver) {
       return {
         stand: "You took a stand.",
@@ -206,7 +210,7 @@ function moveStand(url) {
       };
     }
   }
-  updateScore(userData.username, true);
+  updateScore(userData.un, true, sessId);
   return {
     stand: "You took a stand.",
     gameOver: gameOver,
@@ -215,34 +219,15 @@ function moveStand(url) {
   };
 }
 
-/*function bothStand(username) {
-  let userData = JSON.parse(store.get(username));
-  let gameState = "";
-  let win = false;
-  let tie = false;
-  if (dealerScore > playerScore) {
-    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". You lose.";
-  } else if (playerScore > dealerScore) {
-    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". Congratulations, you win!";
-    win = true;
-  } else if (playerScore === dealerScore) {
-    gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". The game ends in a tie.";
-    tie = true;
-  }
-  if (win) {
-    userData.win++;
-  } else if (!tie) {
-    userData.loss++;
-  }
-  store.put(username, JSON.stringify(userData));
-  store.put(sessId, JSON.stringify(userData));
-
-  return gameState;
-}*/
-
 function initGame(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7);
-  let userData = JSON.parse(store.get(sessId));
+  let userData = store.get(sessId);
+
+  console.log(sessId)
+  console.log("-----")
+  console.log(JSON.stringify(userData));
+  console.log("-----")
+
   let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
   deck = [];
   dealerScore = 0;
@@ -256,8 +241,8 @@ function initGame(url) {
     deck.push(cardNums[i] + " of Diamonds");
     deck.push(cardNums[i] + " of Hearts");
   }
-  deal(userData.username);
-  updateScore(userData.username);
+  deal(userData.un, sessId);
+  updateScore(userData.un, false, sessId);
   return {
     playerHand: playerHand,
     playerScore: playerScore
