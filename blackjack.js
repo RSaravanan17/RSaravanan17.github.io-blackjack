@@ -1,17 +1,3 @@
-/*var firebase = require('firebase/app');
-require('firebase/database');*/
-//var firebase = new Firebase('https://blackjack-5a244.firebaseio.com/');
-//var database = firebase.database();
-/*var config = {
-  apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
-  authDomain: "blackjack-5a244.firebaseapp.com",
-  databaseURL: "https://blackjack-5a244.firebaseio.com",
-  projectId: "blackjack-5a244",
-  storageBucket: "blackjack-5a244.appspot.com",
-  messagingSenderId: "841464784637"
-};
-firebase.initializeApp(config);*/
-
 var bj = (function() {
   var sessId;
   var currentUn = "";
@@ -21,7 +7,7 @@ var bj = (function() {
     let currentPlayer = document.getElementById("username").value;
     let currentPassword = document.getElementById("password").value;
 
-    fetch('http://localhost:8080/api/login?username=' + currentPlayer + '&password=' + currentPassword).then(function(response) {
+    fetch('http://52.54.181.235:3000/api/login?username=' + currentPlayer + '&password=' + currentPassword).then(function(response) {
       response.json().then(function(data) {
         currentUn = data.user;
         currentPw = data.pass;
@@ -70,7 +56,7 @@ var bj = (function() {
   }
 
   function moveHit() {
-    fetch('http://localhost:8080/api/hit?sessId=' + sessId).then(function(response) {
+    fetch('http://52.54.181.235:3000/api/hit?sessId=' + sessId + '&username=' + currentUn).then(function(response) {
       response.json().then(function(data) {
         showCards(data.playerHand);
 
@@ -92,7 +78,7 @@ var bj = (function() {
   }
 
   function moveStand() {
-    fetch('http://localhost:8080/api/stand?sessId=' + sessId).then(function(response) {
+    fetch('http://52.54.181.235:3000/api/stand?sessId=' + sessId + '&username=' + currentUn).then(function(response) {
       response.json().then(function(data) {
         let gameList1 = document.getElementById('gameInfo');
         let next1 = document.createElement('li');
@@ -116,7 +102,7 @@ var bj = (function() {
   }
 
   function initGame() {
-    fetch('http://localhost:8080/api/init?sessId=' + sessId).then(function(response) {
+    fetch('http://52.54.181.235:3000/api/init?userId=' + sessId + '&username=' + currentUn).then(function(response) {
       response.json().then(function(data) {
         showCards(data.playerHand);
 
@@ -124,6 +110,15 @@ var bj = (function() {
         let next = document.createElement('li');
         next.appendChild(document.createTextNode("Your cards are " + JSON.stringify(data.playerHand) + ". Your score is " + data.playerScore + "."));
         gameList.appendChild(next);
+
+        if (data.gameOver) {
+          let gameList1 = document.getElementById('gameInfo');
+          let next1 = document.createElement('li');
+          next1.appendChild(document.createTextNode(data.gameState));
+          gameList1.appendChild(next1);
+
+          disableButtons();
+        }
       })
     });
   }
@@ -155,7 +150,7 @@ var bj = (function() {
       document.getElementById("stand").disabled = false;
 
       var currentDeck = document.getElementById("deck");
-      while(currentDeck.firstChild) {
+      while (currentDeck.firstChild) {
         currentDeck.removeChild(currentDeck.firstChild);
       }
       let divDeck = document.getElementById("deck");
