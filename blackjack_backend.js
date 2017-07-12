@@ -1,3 +1,6 @@
+var playerList;
+var playerWins = 0;
+var playerLosses = 0;
 var deck = [];
 var dealerScore;
 var playerScore;
@@ -11,41 +14,33 @@ var url = require('url');
 var Storage = require('node-storage');
 var store = new Storage('myStorage');
 
-var admin = require("firebase-admin");
-var serviceAccount = require("path/to/serviceAccountKey.json");
-var refreshToken; // Get refresh token from OAuth2 flow
-var db = admin.database();
-var ref = db.ref("server/saving-data/blackjack");
-var usersRef = ref.child("users");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://blackjack-5a244.firebaseio.com"
-});
-
-admin.initializeApp({
-  credential: admin.credential.refreshToken(refreshToken),
-  databaseURL: "https://blackjack-5a244.firebaseio.com"
-});
-
-var defaultApp = admin.initializeApp(defaultAppConfig);
-console.log(defaultApp.name); // "[DEFAULT]"
-
-var defaultAuth = defaultApp.auth();
-var defaultDatabase = defaultApp.database();
+var firebase = require('firebase');
+var config = {
+    apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
+    authDomain: "blackjack-5a244.firebaseapp.com",
+    databaseURL: "https://blackjack-5a244.firebaseio.com",
+    projectId: "blackjack-5a244",
+    storageBucket: "blackjack-5a244.appspot.com",
+    messagingSenderId: "841464784637"
+  };
+firebase.initializeApp(config);
+var db = firebase.database();
+var ref = db.ref('server/saving-data/blackjack');
+var usersRef = ref.child('users');
 
 var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
   var result;
 
-  if (/^\/api\/init/.test(req.url)) {
+
+  if (/^\/api\/login/.test(req.url)) {
+    result = login(req.url);
+  } else if (/^\/api\/init/.test(req.url)) {
     result = initGame(req.url);
   } else if (/^\/api\/hit/.test(req.url)) {
     result = moveHit(req.url);
   } else if (/^\/api\/stand/.test(req.url)) {
     result = moveStand(req.url);
-  } else if (/^\/api\/login/.test(req.url)) {
-    result = login(req.url);
   }
 
   if (result) {
@@ -71,12 +66,28 @@ function login(url) {
   let password = url.slice(url.indexOf('password=') + 9);
   let sessId = JSON.stringify(new Date().getTime());
   //let userData = store.get(username);
+  usersRef.set({
+    test: {
+      'un': 'test',
+      'pw': 'test',
+      'win': 7,
+      'loss': 5
+    }
+  });
 
-  if (firebase.database().ref('/users/' + username)) {
-    if (firebase.database().ref('/users/' + username + '/pw') === password) {
-      statement = "Welcome back to Blackjack! You have " + firebase.database().ref('/users/' + username + "/win") + " win(s) and " + firebase.database().ref('/users/' + username + '/loss') + " loss(es).";
+  usersRef.on('value', function (data) {
+    playerList = data.val();
+  }, function (err) {
+    console.log(err);
+  });
+
+  if (playerList[username]) {
+    playerWins = playerList[username].win;
+    playerLosses = playerList[username].loss;
+    if (playerList[username].pw === password) {
+      statement = "Welcome back to Blackjack! You have " + playerList[username].win + " win(s) and " + playerList[username].loss + " loss(es).";
     } else {
-      statement = "Your password is invalid. Refresh the page and try again." + password + " / " + userData.pw;
+      statement = "Your password is invalid. Refresh the page and try again.";
     }
   } else {
     usersRef.set({
@@ -103,11 +114,13 @@ function login(url) {
   store.put(sessId, userData);
   console.log(JSON.stringify(store.get(sessId)));
   console.log("-----")*/
+
   return {
     user: username,
     pass: password,
     statement: statement,
-    sessId: sessId
+    sessId: sessId,
+    playerWins: playerList
   };
 }
 
@@ -154,7 +167,13 @@ function updateScore(username, bothStand, sessId) {
   let tie = false;
   let win = false;
   //let userData = store.get(username);
-  usersRef = firebase.database().ref('/users/');
+
+  usersRef.on('value', function (data) {
+    playerList = data.val();
+  }, function (err) {
+    console.log(err);
+  });
+
   dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
   playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
 
@@ -196,12 +215,12 @@ function updateScore(username, bothStand, sessId) {
     if (win) {
       //userData.win++;
       usersRef.child(username).update({
-        "win": firebase.database().ref('/users/' + username + "/win") + 1
+        'win': playerWins + 1
       });
     } else {
       //userData.loss++;
       usersRef.child(username).update({
-        "loss": firebase.database().ref('/users/' + username + "/loss") + 1
+        'loss': playerLosses + 1
       });
     }
   }
@@ -269,7 +288,6 @@ function initGame(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
   //let userData = store.get(sessId);
-  usersRef = firebase.database().ref('/users/' + username);
 
   /*console.log(sessId)
   console.log("-----")

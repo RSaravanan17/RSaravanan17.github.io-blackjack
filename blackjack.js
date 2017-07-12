@@ -20,6 +20,8 @@ var bj = (function() {
         sessId = data.sessId;
         document.getElementById('sessionId').innerHTML = "Session ID: " + data.sessId;
 
+        console.log(data.playerList);
+
         initGame();
       })
     });
@@ -102,7 +104,7 @@ var bj = (function() {
   }
 
   function initGame() {
-    fetch('http://52.54.181.235:3000/api/init?userId=' + sessId + '&username=' + currentUn).then(function(response) {
+    fetch('http://52.54.181.235:3000/api/init?sessId=' + sessId + '&username=' + currentUn).then(function(response) {
       response.json().then(function(data) {
         showCards(data.playerHand);
 
