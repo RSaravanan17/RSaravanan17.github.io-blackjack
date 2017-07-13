@@ -3,26 +3,34 @@ var bj = (function() {
   var currentUn = "";
   var currentPw = "";
 
-  function savePlayerData() {
+  function savePlayerData(loggedIn) {
     let currentPlayer = document.getElementById("username").value;
     let currentPassword = document.getElementById("password").value;
 
-    fetch('http://52.54.181.235:3000/api/login?username=' + currentPlayer + '&password=' + currentPassword).then(function(response) {
+    fetch('http://52.54.181.235:3000/api/login?username=' + currentPlayer + '&password=' + currentPassword + '&loggedIn=' + loggedIn).then(function(response) {
       response.json().then(function(data) {
-        currentUn = data.user;
-        currentPw = data.pass;
+        if (data.statement !== ""){
+          currentUn = data.user;
+          currentPw = data.pass;
 
-        let gameList = document.getElementById('gameInfo');
-        let next = document.createElement('li');
-        next.appendChild(document.createTextNode("Hello " + data.user + "! " + data.statement));
-        gameList.appendChild(next);
+          let gameList = document.getElementById('gameInfo');
+          let next = document.createElement('li');
+          next.appendChild(document.createTextNode("Hello " + data.user + "! " + data.statement));
+          gameList.appendChild(next);
 
-        sessId = data.sessId;
-        document.getElementById('sessionId').innerHTML = "Session ID: " + data.sessId;
+          sessId = data.sessId;
+          document.getElementById('sessionId').innerHTML = "Session ID: " + data.sessId;
+          console.log(data.currentKey + " " + data.playerFound + " " + loggedIn);
 
-        console.log(data.playerList);
-
-        initGame();
+          updatePlayers();
+          initGame();
+        }
+        else {
+          let gameList = document.getElementById('gameInfo');
+          let next = document.createElement('li');
+          next.appendChild(document.createTextNode("Hello " + data.user + "! Your password is invalid. Refresh the page and try again."));
+          gameList.appendChild(next);
+        }
       })
     });
   }
@@ -50,6 +58,20 @@ var bj = (function() {
         divDeck.appendChild(divCard);
       }
     }
+  }
+
+  function updatePlayers() {
+    fetch('http://52.54.181.235:3000/api/updatePlayers').then(function(response) {
+      response.json().then(function(data) {
+        for (var i = 0; i < data.listOfPlayers.legnth; i++) {
+          let list = document.getElementById('playerList');
+          let next = document.createElement('li');
+          next.appendChild(document.createTextNode("User: " + data.listOfPlayers[i] + " - Won: " + data.listOfWins[i] + " - Lost: " + data.listOfLosses[i]));
+          list.appendChild(next);
+          console.log("User: " + data.listOfPlayers[i] + " - Won: " + data.listOfWins[i] + " - Lost: " + data.listOfLosses[i]);
+        }
+      })
+    });
   }
 
   function disableButtons() {
@@ -125,8 +147,8 @@ var bj = (function() {
     });
   }
 
-  function playGame() {
-    savePlayerData();
+  function playGame(loggedIn) {
+    savePlayerData(loggedIn);
     document.getElementById('submit').disabled = true;
     document.getElementById('username').disabled = false;
     document.getElementById('password').disabled = false;
@@ -135,7 +157,7 @@ var bj = (function() {
   window.onload = function() {
     let submit = document.getElementById('submit');
     submit.onclick = function() {
-      playGame();
+      playGame(false);
     };
 
     let playAgain = document.getElementById('playAgain');
@@ -160,7 +182,7 @@ var bj = (function() {
       cardHeader.setAttribute("value", "Your Cards:");
       divDeck.appendChild(cardHeader);
 
-      playGame();
+      playGame(true);
     };
   }
 

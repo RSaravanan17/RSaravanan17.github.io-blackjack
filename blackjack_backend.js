@@ -1,6 +1,5 @@
 var playerList;
-var playerWins = 0;
-var playerLosses = 0;
+var currentKey;
 var deck = [];
 var dealerScore;
 var playerScore;
@@ -16,13 +15,13 @@ var store = new Storage('myStorage');
 
 var firebase = require('firebase');
 var config = {
-    apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
-    authDomain: "blackjack-5a244.firebaseapp.com",
-    databaseURL: "https://blackjack-5a244.firebaseio.com",
-    projectId: "blackjack-5a244",
-    storageBucket: "blackjack-5a244.appspot.com",
-    messagingSenderId: "841464784637"
-  };
+  apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
+  authDomain: "blackjack-5a244.firebaseapp.com",
+  databaseURL: "https://blackjack-5a244.firebaseio.com",
+  projectId: "blackjack-5a244",
+  storageBucket: "blackjack-5a244.appspot.com",
+  messagingSenderId: "841464784637"
+};
 firebase.initializeApp(config);
 var db = firebase.database();
 var ref = db.ref('server/saving-data/blackjack');
@@ -41,6 +40,8 @@ var server = http.createServer(function(req, res) {
     result = moveHit(req.url);
   } else if (/^\/api\/stand/.test(req.url)) {
     result = moveStand(req.url);
+  } else if (/^\/api\/updatePlayers/.test(req.url)) {
+    result = updatePlayerList();
   }
 
   if (result) {
@@ -63,65 +64,82 @@ server.listen(3000);
 function login(url) {
   let statement = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
-  let password = url.slice(url.indexOf('password=') + 9);
+  let password = url.slice(url.indexOf('password=') + 9, url.lastIndexOf('&'));
+  let loggedIn = url.slice(url.indexOf('loggedIn=') + 9) === 'true';
   let sessId = JSON.stringify(new Date().getTime());
-  //let userData = store.get(username);
-  usersRef.set({
-    test: {
-      'un': 'test',
-      'pw': 'test',
-      'win': 7,
-      'loss': 5
-    }
+  let playerFound = false;
+  let playerListKeys;
+
+  usersRef.child('test').set({
+    '=': 0
   });
 
-  usersRef.on('value', function (data) {
+  usersRef.on('value', function(data) {
     playerList = data.val();
-  }, function (err) {
+    playerListKeys = Object.keys(playerList);
+    for (var i = 0; i < playerListKeys.length; i++) {
+      currentKey = playerListKeys[i];
+      if (playerList[currentKey].un === username) {
+        playerFound = true;
+        break;
+      }
+      break;
+    }
+  }, function(err) {
     console.log(err);
   });
 
-  if (playerList[username]) {
-    playerWins = playerList[username].win;
-    playerLosses = playerList[username].loss;
-    if (playerList[username].pw === password) {
-      statement = "Welcome back to Blackjack! You have " + playerList[username].win + " win(s) and " + playerList[username].loss + " loss(es).";
-    } else {
-      statement = "Your password is invalid. Refresh the page and try again.";
+  //usersRef.child('test').remove();
+
+  if (playerFound || loggedIn) {
+    if (playerList[currentKey].pw === password) {
+      statement = "Welcome back to Blackjack! You have " + playerList[currentKey].win + " win(s) and " + playerList[currentKey].loss + " loss(es).";
     }
   } else {
-    usersRef.set({
-      username: {
-        'un': username,
-        'pw': password,
-        'win': 0,
-        'loss': 0
-      }
+    usersRef.push({
+      'un': username,
+      'pw': password,
+      'win': 0,
+      'loss': 0
     });
-    /*userData = {
-      un: username,
-      pw: password,
-      sessId: sessId,
-      win: 0,
-      loss: 0
-    };
-    store.put(username, userData);*/
     statement = "Welcome to Blackjack! You can choose to 'hit' or 'stand' in the red area and you can see your hand in the blue area.";
   }
-
-  /*console.log(sessId)
-  console.log("-----")
-  store.put(sessId, userData);
-  console.log(JSON.stringify(store.get(sessId)));
-  console.log("-----")*/
 
   return {
     user: username,
     pass: password,
     statement: statement,
     sessId: sessId,
-    playerWins: playerList
+    currentKey: currentKey,
+    playerFound: playerFound
   };
+}
+
+function updatePlayerList() {
+  let listOfPlayers = [];
+  let listOfWins = [];
+  let listOfLosses = [];
+  usersRef.child('test').remove();
+
+  usersRef.on('value', function(data) {
+    playerList = data.val();
+    playerListKeys = Object.keys(playerList);
+    for (var i = 0; i < playerListKeys.length; i++) {
+      listOfPlayers.push(playerList[playerListKeys[i].un]);
+      listOfWins.push(playerList[playerListKeys[i].win]);
+      listOfLosses.push(playerList[playerListKeys[i].loss]);
+    }
+  }, function(err) {
+    console.log(err);
+  });
+
+  console.log(listOfPlayers + " " + listOfWins + " " + listOfLosses);
+
+  return {
+    listOfPlayers: listOfPlayers,
+    listOfWins: listOfWins,
+    listOfLosses: listOfLosses
+  }
 }
 
 function scoreWithoutAce(person, personScore) {
@@ -166,13 +184,6 @@ function scoreWithAce(person, personScore) {
 function updateScore(username, bothStand, sessId) {
   let tie = false;
   let win = false;
-  //let userData = store.get(username);
-
-  usersRef.on('value', function (data) {
-    playerList = data.val();
-  }, function (err) {
-    console.log(err);
-  });
 
   dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
   playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
@@ -213,19 +224,15 @@ function updateScore(username, bothStand, sessId) {
   }
   if (gameOver && !tie) {
     if (win) {
-      //userData.win++;
-      usersRef.child(username).update({
-        'win': playerWins + 1
+      usersRef.child(currentKey).update({
+        'win': playerList[currentKey].win + 1
       });
     } else {
-      //userData.loss++;
-      usersRef.child(username).update({
-        'loss': playerLosses + 1
+      usersRef.child(currentKey).update({
+        'loss': playerList[currentKey].loss + 1
       });
     }
   }
-  //store.put(username, userData);
-  //store.put(sessId, userData);
 }
 
 function randomCard(deck) {
@@ -246,7 +253,6 @@ function deal(username, sessId) {
 function moveHit(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  //let userData = store.get(sessId);
   playerHand.push(randomCard(deck));
   updateScore(username, false, sessId);
   return {
@@ -260,7 +266,6 @@ function moveHit(url) {
 function moveStand(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  //let userData = store.get(sessId);
   let dealerHit = 0;
   while (dealerScore < 17) {
     dealerHit++;
@@ -287,12 +292,6 @@ function moveStand(url) {
 function initGame(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  //let userData = store.get(sessId);
-
-  /*console.log(sessId)
-  console.log("-----")
-  console.log(JSON.stringify(userData));
-  console.log("-----")*/
 
   let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
   deck = [];
