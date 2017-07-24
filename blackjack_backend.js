@@ -10,8 +10,6 @@ var gameState = "";
 
 var http = require('http');
 var url = require('url');
-var Storage = require('node-storage');
-var store = new Storage('myStorage');
 
 var firebase = require('firebase');
 var config = {
@@ -71,31 +69,32 @@ function login(url) {
   let playerListKeys;
 
   usersRef.child('test').set({
-    '=': 0
+    '0': 0
   });
 
   usersRef.on('value', function(data) {
     playerList = data.val();
     playerListKeys = Object.keys(playerList);
-    for (var i = 0; i < playerListKeys.length; i++) {
+    var i = 0;
+    while (!playerFound && i < playerListKeys.length) {
       currentKey = playerListKeys[i];
       if (playerList[currentKey].un === username) {
         playerFound = true;
-        break;
       }
-      break;
+      if (playerFound || loggedIn) {
+        if (playerList[currentKey].pw === password) {
+          statement = "Welcome back to Blackjack! You have " + playerList[currentKey].win + " win(s) and " + playerList[currentKey].loss + " loss(es).";
+        }
+      }
+      i++;
     }
   }, function(err) {
     console.log(err);
   });
 
-  //usersRef.child('test').remove();
+  usersRef.child('test').remove();
 
-  if (playerFound || loggedIn) {
-    if (playerList[currentKey].pw === password) {
-      statement = "Welcome back to Blackjack! You have " + playerList[currentKey].win + " win(s) and " + playerList[currentKey].loss + " loss(es).";
-    }
-  } else {
+  if (!playerFound) {
     usersRef.push({
       'un': username,
       'pw': password,
@@ -110,8 +109,6 @@ function login(url) {
     pass: password,
     statement: statement,
     sessId: sessId,
-    currentKey: currentKey,
-    playerFound: playerFound
   };
 }
 
@@ -119,21 +116,24 @@ function updatePlayerList() {
   let listOfPlayers = [];
   let listOfWins = [];
   let listOfLosses = [];
-  usersRef.child('test').remove();
+
+  usersRef.child('test').set({
+    '0': 0
+  });
 
   usersRef.on('value', function(data) {
     playerList = data.val();
     playerListKeys = Object.keys(playerList);
     for (var i = 0; i < playerListKeys.length; i++) {
-      listOfPlayers.push(playerList[playerListKeys[i].un]);
-      listOfWins.push(playerList[playerListKeys[i].win]);
-      listOfLosses.push(playerList[playerListKeys[i].loss]);
+      listOfPlayers.push(playerList[playerListKeys[i]].un);
+      listOfWins.push(playerList[playerListKeys[i]].win);
+      listOfLosses.push(playerList[playerListKeys[i]].loss);
     }
   }, function(err) {
     console.log(err);
   });
 
-  console.log(listOfPlayers + " " + listOfWins + " " + listOfLosses);
+  usersRef.child('test').remove();
 
   return {
     listOfPlayers: listOfPlayers,

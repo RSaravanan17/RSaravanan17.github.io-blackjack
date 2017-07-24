@@ -20,7 +20,6 @@ var bj = (function() {
 
           sessId = data.sessId;
           document.getElementById('sessionId').innerHTML = "Session ID: " + data.sessId;
-          console.log(data.currentKey + " " + data.playerFound + " " + loggedIn);
 
           updatePlayers();
           initGame();
@@ -63,12 +62,11 @@ var bj = (function() {
   function updatePlayers() {
     fetch('http://52.54.181.235:3000/api/updatePlayers').then(function(response) {
       response.json().then(function(data) {
-        for (var i = 0; i < data.listOfPlayers.legnth; i++) {
+        for (var i = 0; i < data.listOfPlayers.length; i++) {
           let list = document.getElementById('playerList');
           let next = document.createElement('li');
           next.appendChild(document.createTextNode("User: " + data.listOfPlayers[i] + " - Won: " + data.listOfWins[i] + " - Lost: " + data.listOfLosses[i]));
           list.appendChild(next);
-          console.log("User: " + data.listOfPlayers[i] + " - Won: " + data.listOfWins[i] + " - Lost: " + data.listOfLosses[i]);
         }
       })
     });
@@ -150,8 +148,8 @@ var bj = (function() {
   function playGame(loggedIn) {
     savePlayerData(loggedIn);
     document.getElementById('submit').disabled = true;
-    document.getElementById('username').disabled = false;
-    document.getElementById('password').disabled = false;
+    document.getElementById('username').disabled = true;
+    document.getElementById('password').disabled = true;
   }
 
   window.onload = function() {
