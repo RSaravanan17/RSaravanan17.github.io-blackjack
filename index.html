@@ -9,33 +9,34 @@
 
 <body>
   <div id="background">
-    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-storage.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-messaging.js"></script>
-    <script src="blackjack.js"></script>
-    <h1><img id="image" src="https://www.gentingcasino.com/images/uploads/games/blackjack.jpg" alt="Blackjack logo" /></h1>
-    <h3>
-      Username: <input id="username"></input>
-    </h3>
-    <h3>
-      Password: <input type="password" id="password"></input>
-    </h3>
-    <br/>
-    <button id="submit">Submit</button>
-    <h4 id="sessionId"></h4>
-    <ul id="gameInfo"></ul>
-    <div id="hitOrStand">
-      <p style="font-size:130%;">What move do you want to take?</p>
-      <button id="hit" name="move" style="font-size:130%;" onclick="bj.moveHit()">Hit</button>
-      <button id="stand" name="move" style="font-size:130%;" onclick="bj.moveStand()">Stand</button>
+    <div id="gamePlay">
+      <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase.js"></script>
+      <script src="blackjack.js"></script>
+      <h1><img id="image" src="https://www.gentingcasino.com/images/uploads/games/blackjack.jpg" alt="Blackjack logo" /></h1>
+      <h3>
+        Username: <input id="username"></input>
+      </h3>
+      <h3>
+        Password: <input type="password" id="password"></input>
+      </h3>
+      <br/>
+      <button id="submit">Submit</button>
+      <h4 id="sessionId"></h4>
+      <ul id="gameInfo"></ul>
+      <div id="hitOrStand">
+        <p style="font-size:130%;">What move do you want to take?</p>
+        <button id="hit" name="move" style="font-size:130%;" onclick="bj.moveHit()">Hit</button>
+        <button id="stand" name="move" style="font-size:130%;" onclick="bj.moveStand()">Stand</button>
+      </div>
+      <div id="deck">
+        <p>Your Cards:</p>
+      </div>
+      <button id="playAgain">Play Again</button>
     </div>
-    <div id="deck">
-      <p>Your Cards:</p>
+    <div id="users">
+      <h3>Players:</h3>
+      <ul id="playerList"></ul>
     </div>
-    <button id="playAgain">Play Again</button>
   </div>
 </body>
 

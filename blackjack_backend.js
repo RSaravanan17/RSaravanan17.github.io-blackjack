@@ -1,3 +1,4 @@
+var currentPlayer;
 var deck = [];
 var dealerScore;
 var playerScore;
@@ -8,44 +9,35 @@ var gameState = "";
 
 var http = require('http');
 var url = require('url');
-var Storage = require('node-storage');
-var store = new Storage('myStorage');
 
-var admin = require("firebase-admin");
-var serviceAccount = require("path/to/serviceAccountKey.json");
-var refreshToken; // Get refresh token from OAuth2 flow
-var db = admin.database();
-var ref = db.ref("server/saving-data/blackjack");
-var usersRef = ref.child("users");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://blackjack-5a244.firebaseio.com"
-});
-
-admin.initializeApp({
-  credential: admin.credential.refreshToken(refreshToken),
-  databaseURL: "https://blackjack-5a244.firebaseio.com"
-});
-
-var defaultApp = admin.initializeApp(defaultAppConfig);
-console.log(defaultApp.name); // "[DEFAULT]"
-
-var defaultAuth = defaultApp.auth();
-var defaultDatabase = defaultApp.database();
+var firebase = require('firebase');
+var config = {
+  apiKey: "AIzaSyBX9CyTmSz0sDhMzCd9zINumBTIfr_O1X8",
+  authDomain: "blackjack-5a244.firebaseapp.com",
+  databaseURL: "https://blackjack-5a244.firebaseio.com",
+  projectId: "blackjack-5a244",
+  storageBucket: "blackjack-5a244.appspot.com",
+  messagingSenderId: "841464784637"
+};
+firebase.initializeApp(config);
+var db = firebase.database();
+var ref = db.ref('server/saving-data/blackjack');
+var usersRef = ref.child('users');
 
 var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
   var result;
 
-  if (/^\/api\/init/.test(req.url)) {
+  if (/^\/api\/login/.test(req.url)) {
+    result = login(req.url);
+  } else if (/^\/api\/init/.test(req.url)) {
     result = initGame(req.url);
   } else if (/^\/api\/hit/.test(req.url)) {
     result = moveHit(req.url);
   } else if (/^\/api\/stand/.test(req.url)) {
     result = moveStand(req.url);
-  } else if (/^\/api\/login/.test(req.url)) {
-    result = login(req.url);
+  } else if (/^\/api\/updatePlayers/.test(req.url)) {
+    result = updatePlayerList();
   }
 
   if (result) {
@@ -68,47 +60,65 @@ server.listen(3000);
 function login(url) {
   let statement = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
-  let password = url.slice(url.indexOf('password=') + 9);
+  let password = url.slice(url.indexOf('password=') + 9, url.lastIndexOf('&'));
+  let loggedIn = url.slice(url.indexOf('loggedIn=') + 9) === 'true';
   let sessId = JSON.stringify(new Date().getTime());
-  //let userData = store.get(username);
+  let playerFound = false;
 
-  if (firebase.database().ref('/users/' + username)) {
-    if (firebase.database().ref('/users/' + username + '/pw') === password) {
-      statement = "Welcome back to Blackjack! You have " + firebase.database().ref('/users/' + username + "/win") + " win(s) and " + firebase.database().ref('/users/' + username + '/loss') + " loss(es).";
-    } else {
-      statement = "Your password is invalid. Refresh the page and try again." + password + " / " + userData.pw;
+  usersRef.on("child_added", function(data, prevChildKey) {
+    let playerInfo = data.val();
+    if (playerInfo.un === username) {
+      playerFound = true;
+      currentPlayer = data.val();
     }
-  } else {
-    usersRef.set({
-      username: {
+    if (playerFound) {
+      if (playerInfo.pw === password) {
+        statement = "Welcome back to Blackjack! You have " + playerInfo.win + " win(s) and " + playerInfo.loss + " loss(es).";
+      }
+    }
+  }, function(err) {
+    console.log(err);
+  });
+
+  if (!playerFound) {
+    usersRef.update({
+      [username]: {
         'un': username,
         'pw': password,
         'win': 0,
         'loss': 0
       }
     });
-    /*userData = {
-      un: username,
-      pw: password,
-      sessId: sessId,
-      win: 0,
-      loss: 0
-    };
-    store.put(username, userData);*/
     statement = "Welcome to Blackjack! You can choose to 'hit' or 'stand' in the red area and you can see your hand in the blue area.";
   }
 
-  /*console.log(sessId)
-  console.log("-----")
-  store.put(sessId, userData);
-  console.log(JSON.stringify(store.get(sessId)));
-  console.log("-----")*/
   return {
     user: username,
     pass: password,
     statement: statement,
-    sessId: sessId
+    sessId: sessId,
   };
+}
+
+function updatePlayerList() {
+  let listOfPlayers = [];
+  let listOfWins = [];
+  let listOfLosses = [];
+
+  usersRef.on("child_added", function(data, prevChildKey) {
+    let playerInfo = data.val();
+    listOfPlayers.push(playerInfo.un);
+    listOfWins.push(playerInfo.win);
+    listOfLosses.push(playerInfo.loss);
+  }, function(err) {
+    console.log(err);
+  });
+
+  return {
+    listOfPlayers: listOfPlayers,
+    listOfWins: listOfWins,
+    listOfLosses: listOfLosses
+  }
 }
 
 function scoreWithoutAce(person, personScore) {
@@ -153,8 +163,7 @@ function scoreWithAce(person, personScore) {
 function updateScore(username, bothStand, sessId) {
   let tie = false;
   let win = false;
-  //let userData = store.get(username);
-  usersRef = firebase.database().ref('/users/');
+
   dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
   playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
 
@@ -174,7 +183,7 @@ function updateScore(username, bothStand, sessId) {
       gameState = "Your score of " + playerScore + " is over 21 so the game is over. You lost.";
       gameOver = true;
     } else if (dealerScore > 21) {
-      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. You win.";
+      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. Congratulations, you win!.";
       gameOver = true;
       win = true;
     } else if (dealerScore === 21 && playerScore === 21) {
@@ -185,7 +194,7 @@ function updateScore(username, bothStand, sessId) {
       gameState = "The dealer has a score of exactly 21. You lost.";
       gameOver = true;
     } else if (playerScore === 21) {
-      gameState = "Your score is exactly 21. You win.";
+      gameState = "Your score is exactly 21. Congratulations, you win!.";
       gameOver = true;
       win = true;
     } else {
@@ -194,19 +203,22 @@ function updateScore(username, bothStand, sessId) {
   }
   if (gameOver && !tie) {
     if (win) {
-      //userData.win++;
       usersRef.child(username).update({
-        "win": firebase.database().ref('/users/' + username + "/win") + 1
+        'win': currentPlayer.win + 1
       });
     } else {
-      //userData.loss++;
       usersRef.child(username).update({
-        "loss": firebase.database().ref('/users/' + username + "/loss") + 1
+        'loss': currentPlayer.loss + 1
       });
     }
   }
-  //store.put(username, userData);
-  //store.put(sessId, userData);
+}
+
+function randomCard(deck) {
+  var index = Math.floor(Math.random() * deck.length);
+  var newCard = deck[index];
+  deck.splice(index, 1);
+  return newCard;
 }
 
 function randomCard(deck) {
@@ -227,7 +239,6 @@ function deal(username, sessId) {
 function moveHit(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  //let userData = store.get(sessId);
   playerHand.push(randomCard(deck));
   updateScore(username, false, sessId);
   return {
@@ -241,7 +252,6 @@ function moveHit(url) {
 function moveStand(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  //let userData = store.get(sessId);
   let dealerHit = 0;
   while (dealerScore < 17) {
     dealerHit++;
@@ -268,13 +278,6 @@ function moveStand(url) {
 function initGame(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  //let userData = store.get(sessId);
-  usersRef = firebase.database().ref('/users/' + username);
-
-  /*console.log(sessId)
-  console.log("-----")
-  console.log(JSON.stringify(userData));
-  console.log("-----")*/
 
   let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
   deck = [];
