@@ -9,7 +9,7 @@ var bj = (function() {
 
     fetch('http://52.54.181.235:3000/api/login?username=' + currentPlayer + '&password=' + currentPassword + '&loggedIn=' + loggedIn).then(function(response) {
       response.json().then(function(data) {
-        if (data.statement !== ""){
+        if (data.statement !== "") {
           currentUn = data.user;
           currentPw = data.pass;
 
@@ -23,8 +23,7 @@ var bj = (function() {
 
           updatePlayers();
           initGame();
-        }
-        else {
+        } else {
           let gameList = document.getElementById('gameInfo');
           let next = document.createElement('li');
           next.appendChild(document.createTextNode("Hello " + data.user + "! Your password is invalid. Refresh the page and try again."));
@@ -62,17 +61,21 @@ var bj = (function() {
   function updatePlayers() {
     fetch('http://52.54.181.235:3000/api/updatePlayers').then(function(response) {
       response.json().then(function(data) {
+        let list = document.getElementById('playerList');
+        while (list.firstChild) {
+          list.removeChild(list.firstChild);
+        }
         for (var i = 0; i < data.listOfPlayers.length; i++) {
-          let list = document.getElementById('playerList');
           let next = document.createElement('li');
-          next.appendChild(document.createTextNode("User: " + data.listOfPlayers[i] + " - Won: " + data.listOfWins[i] + " - Lost: " + data.listOfLosses[i]));
+          next.appendChild(document.createTextNode("User: " + data.listOfPlayers[i] + " | Won: " + data.listOfWins[i] + " | Lost: " + data.listOfLosses[i]));
           list.appendChild(next);
         }
       })
     });
   }
 
-  function disableButtons() {
+  function updatePage() {
+    updatePlayers();
     document.getElementById("hit").disabled = true;
     document.getElementById("stand").disabled = true;
   }
@@ -93,7 +96,7 @@ var bj = (function() {
           next1.appendChild(document.createTextNode(data.gameState));
           gameList1.appendChild(next1);
 
-          disableButtons();
+          updatePage();
         }
       });
     });
@@ -118,7 +121,7 @@ var bj = (function() {
           next.appendChild(document.createTextNode("The dealer took " + data.dealerHit + " hit(s) and then stood. " + data.gameState));
           gameList.appendChild(next);
         }
-        disableButtons();
+        updatePage();
       })
     });
   }
@@ -139,7 +142,7 @@ var bj = (function() {
           next1.appendChild(document.createTextNode(data.gameState));
           gameList1.appendChild(next1);
 
-          disableButtons();
+          updatePage();
         }
       })
     });
@@ -153,6 +156,7 @@ var bj = (function() {
   }
 
   window.onload = function() {
+    updatePlayers();
     let submit = document.getElementById('submit');
     submit.onclick = function() {
       playGame(false);

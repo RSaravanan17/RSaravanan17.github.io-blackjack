@@ -1,5 +1,4 @@
-var playerList;
-var currentKey;
+var currentPlayer;
 var deck = [];
 var dealerScore;
 var playerScore;
@@ -28,7 +27,6 @@ var usersRef = ref.child('users');
 var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
   var result;
-
 
   if (/^\/api\/login/.test(req.url)) {
     result = login(req.url);
@@ -66,40 +64,30 @@ function login(url) {
   let loggedIn = url.slice(url.indexOf('loggedIn=') + 9) === 'true';
   let sessId = JSON.stringify(new Date().getTime());
   let playerFound = false;
-  let playerListKeys;
 
-  usersRef.child('test').set({
-    '0': 0
-  });
-
-  usersRef.on('value', function(data) {
-    playerList = data.val();
-    playerListKeys = Object.keys(playerList);
-    var i = 0;
-    while (!playerFound && i < playerListKeys.length) {
-      currentKey = playerListKeys[i];
-      if (playerList[currentKey].un === username) {
-        playerFound = true;
+  usersRef.on("child_added", function(data, prevChildKey) {
+    let playerInfo = data.val();
+    if (playerInfo.un === username) {
+      playerFound = true;
+      currentPlayer = data.val();
+    }
+    if (playerFound) {
+      if (playerInfo.pw === password) {
+        statement = "Welcome back to Blackjack! You have " + playerInfo.win + " win(s) and " + playerInfo.loss + " loss(es).";
       }
-      if (playerFound || loggedIn) {
-        if (playerList[currentKey].pw === password) {
-          statement = "Welcome back to Blackjack! You have " + playerList[currentKey].win + " win(s) and " + playerList[currentKey].loss + " loss(es).";
-        }
-      }
-      i++;
     }
   }, function(err) {
     console.log(err);
   });
 
-  usersRef.child('test').remove();
-
   if (!playerFound) {
-    usersRef.push({
-      'un': username,
-      'pw': password,
-      'win': 0,
-      'loss': 0
+    usersRef.update({
+      [username]: {
+        'un': username,
+        'pw': password,
+        'win': 0,
+        'loss': 0
+      }
     });
     statement = "Welcome to Blackjack! You can choose to 'hit' or 'stand' in the red area and you can see your hand in the blue area.";
   }
@@ -117,23 +105,14 @@ function updatePlayerList() {
   let listOfWins = [];
   let listOfLosses = [];
 
-  usersRef.child('test').set({
-    '0': 0
-  });
-
-  usersRef.on('value', function(data) {
-    playerList = data.val();
-    playerListKeys = Object.keys(playerList);
-    for (var i = 0; i < playerListKeys.length; i++) {
-      listOfPlayers.push(playerList[playerListKeys[i]].un);
-      listOfWins.push(playerList[playerListKeys[i]].win);
-      listOfLosses.push(playerList[playerListKeys[i]].loss);
-    }
+  usersRef.on("child_added", function(data, prevChildKey) {
+    let playerInfo = data.val();
+    listOfPlayers.push(playerInfo.un);
+    listOfWins.push(playerInfo.win);
+    listOfLosses.push(playerInfo.loss);
   }, function(err) {
     console.log(err);
   });
-
-  usersRef.child('test').remove();
 
   return {
     listOfPlayers: listOfPlayers,
@@ -204,7 +183,7 @@ function updateScore(username, bothStand, sessId) {
       gameState = "Your score of " + playerScore + " is over 21 so the game is over. You lost.";
       gameOver = true;
     } else if (dealerScore > 21) {
-      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. You win.";
+      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. Congratulations, you win!.";
       gameOver = true;
       win = true;
     } else if (dealerScore === 21 && playerScore === 21) {
@@ -215,7 +194,7 @@ function updateScore(username, bothStand, sessId) {
       gameState = "The dealer has a score of exactly 21. You lost.";
       gameOver = true;
     } else if (playerScore === 21) {
-      gameState = "Your score is exactly 21. You win.";
+      gameState = "Your score is exactly 21. Congratulations, you win!.";
       gameOver = true;
       win = true;
     } else {
@@ -224,15 +203,22 @@ function updateScore(username, bothStand, sessId) {
   }
   if (gameOver && !tie) {
     if (win) {
-      usersRef.child(currentKey).update({
-        'win': playerList[currentKey].win + 1
+      usersRef.child(username).update({
+        'win': currentPlayer.win + 1
       });
     } else {
-      usersRef.child(currentKey).update({
-        'loss': playerList[currentKey].loss + 1
+      usersRef.child(username).update({
+        'loss': currentPlayer.loss + 1
       });
     }
   }
+}
+
+function randomCard(deck) {
+  var index = Math.floor(Math.random() * deck.length);
+  var newCard = deck[index];
+  deck.splice(index, 1);
+  return newCard;
 }
 
 function randomCard(deck) {
