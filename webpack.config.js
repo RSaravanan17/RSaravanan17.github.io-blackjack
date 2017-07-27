@@ -2,8 +2,6 @@ var webpack = require("webpack");
 var path = require("path");
 module.exports = {
   entry: {
-    /*'webpack-dev-server/client?http://0.0.0.0:80',
-     config.paths.demo*/
     app: ["./blackjack.js"]
   },
   devServer: {

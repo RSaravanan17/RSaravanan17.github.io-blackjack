@@ -1,9 +1,10 @@
 {
   "name": "node-token-jwt",
   "version": "1.0.0",
-  "description": "This is the login API for my Blackjack game.",
-  "main": "bj_login.js",
+  "description": "Blackjack game",
+  "main": "blackjack_backend.js",
   "scripts": {
+    "start": "webpack-dev-server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
