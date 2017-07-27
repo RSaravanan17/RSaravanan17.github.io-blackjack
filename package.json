@@ -26,6 +26,7 @@
   "homepage": "https://github.com/RSaravanan17/RSaravanan17.github.io#readme",
   "devDependencies": {
     "progress-bar-webpack-plugin": "^1.10.0",
-    "webpack-dev-server": "^2.6.1"
+    "webpack-dev-server": "^2.6.1",
+    "webpack-devserver": "0.0.6"
   }
 }
