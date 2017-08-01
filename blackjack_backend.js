@@ -9,6 +9,8 @@ var gameState = "";
 
 var http = require('http');
 var url = require('url');
+var cors = require('cors');
+var express = require('express');
 
 var firebase = require('firebase');
 var config = {
@@ -24,11 +26,22 @@ var db = firebase.database();
 var ref = db.ref('server/saving-data/blackjack');
 var usersRef = ref.child('users');
 
-var server = http.createServer(function(req, res) {
+var app = express();
+app.use(function(req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Request-Method', '*');
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
   res.setHeader('Access-Control-Allow-Headers', '*');
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
+	}
+  next();
+});
+
+var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
   var result;
 
@@ -44,7 +57,7 @@ var server = http.createServer(function(req, res) {
     result = updatePlayerList();
   }
 
-  if (req.method === 'OPTIONS') {
+  if (result) {
     res.writeHead(200, {
       'Content-Type': 'application/json'
     });
