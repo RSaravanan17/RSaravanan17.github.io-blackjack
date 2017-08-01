@@ -94,9 +94,8 @@ function login(url) {
 
   return {
     user: username,
-    pass: password,
     statement: statement,
-    sessId: sessId,
+    sessId: sessId
   };
 }
 
