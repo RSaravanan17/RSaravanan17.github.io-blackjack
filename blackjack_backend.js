@@ -25,6 +25,10 @@ var ref = db.ref('server/saving-data/blackjack');
 var usersRef = ref.child('users');
 
 var server = http.createServer(function(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Request-Method', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+  res.setHeader('Access-Control-Allow-Headers', '*');
   var parsedUrl = url.parse(req.url, true);
   var result;
 
@@ -40,7 +44,7 @@ var server = http.createServer(function(req, res) {
     result = updatePlayerList();
   }
 
-  if (result) {
+  if (req.method === 'OPTIONS') {
     res.writeHead(200, {
       'Content-Type': 'application/json'
     });
