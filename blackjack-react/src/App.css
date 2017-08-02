@@ -1,0 +1,96 @@
+.App-background {
+  background: rgba(100, 100, 100, 0.50);
+  width: 1230px;
+  overflow: hidden;
+}
+
+.App-gamePlay {
+  background: rgba(10, 125, 10, 0.75);
+  width: 830px;
+  float: left;
+}
+
+.App-image {
+  border-radius: 75px;
+  background-position: left top;
+  background-repeat: repeat;
+  padding: 20px;
+  width: 300px;
+  height: 150px;
+}
+
+.App-submit {
+  font-size: 20px;
+  font-family: Consolas, monospace;
+  text-align: center;
+}
+
+.App-hitOrStand {
+  width: 375px;
+  height: 140px;
+  background: rgba(255, 0, 0, 0.75);
+  float: left;
+  font-size: 20px;
+}
+
+.App-hit {
+  display: inline-block;
+  font-family: Consolas, monospace;
+  font-size: 20px;
+  text-align: center;
+}
+
+.App-stand {
+  display: inline-block;
+  font-family: Consolas, monospace;
+  font-size: 20px;
+  text-align: center;
+}
+
+.App-deck {
+  font-size: 25px;
+  width: 455px;
+  height: 140px;
+  background: rgba(0, 220, 220, 0.75);
+  float: left;
+}
+
+.App-playAgain {
+  font-size: 20px;
+  font-family: Consolas, monospace;
+  text-align: center;
+}
+
+.App-users {
+  text-align: center;
+  float:left;
+}
+
+[target="black"] {
+  width: 50px;
+  height: 50px;
+  color: black;
+  float: left;
+}
+
+[target="red"] {
+  width: 50px;
+  height: 50px;
+  color: red;
+  float: left;
+}
+
+li {
+  font-size: 20px;
+  font-family: Consolas, monospace;
+}
+
+p {
+  font-family: Consolas, monospace;
+  text-align: center;
+}
+
+div {
+  font-family: Consolas, monospace;
+  text-align: center;
+}
