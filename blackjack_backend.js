@@ -237,13 +237,6 @@ function randomCard(deck) {
   return newCard;
 }
 
-function randomCard(deck) {
-  var index = Math.floor(Math.random() * deck.length);
-  var newCard = deck[index];
-  deck.splice(index, 1);
-  return newCard;
-}
-
 function deal(username, sessId) {
   dealerHand.push(randomCard(deck));
   dealerHand.push(randomCard(deck));

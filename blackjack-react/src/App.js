@@ -2,16 +2,20 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './App.css';
 import Login from './bj_login.js';
+import Deck from './bj_deck.js';
 
 class App extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       username: null,
-      password: null
+      password: null,
+      loggedIn: "false",
+      sessId: null
     };
     this.inputValUn = this.inputValUn.bind(this);
     this.inputValPw = this.inputValPw.bind(this);
+    this.inputValLi = this.inputValLi.bind(this);
   }
 
   inputValUn({ target }) {
@@ -23,6 +27,18 @@ class App extends React.Component {
   inputValPw({ target }) {
     this.setState({
       password: target.value
+    });
+  }
+
+  inputValLi({ target }) {
+    this.setState({
+      loggedIn: "true"
+    });
+  }
+
+  setSessId = (sessIdParam) => {
+    this.setState({
+      sessId: sessIdParam
     });
   }
 
@@ -42,20 +58,20 @@ class App extends React.Component {
             Password: <input type="password" id="password" onChange={ this.inputValPw } className="App-password"></input>
           </h3>
           <br/>
-          <button id="submit" className="App-submit" type="submit" onClick={() => { ReactDOM.render(<Login un={this.state.username} pw={this.state.password} loggedIn="false"/>, document.getElementById('gameInfo')); }}>Submit</button>
-          {
-            //<h4 id="sessionId" className="App-sessionId"></h4>
-          }
+          <button id="submit" className="App-submit" type="submit" onClick={() => {
+            ReactDOM.render(<Login un={this.state.username} pw={this.state.password} loggedIn={this.state.loggedIn} callbackSessId={this.setSessId} />, document.getElementById('gameInfo'));
+            ReactDOM.render(<Deck un={this.state.username} sessId={this.state.sessId} />, document.getElementById('deck'));
+            {/*ReactDOM.render(this.state.sessId, document.getElementById('sessionId'));*/}
+          }}>Submit</button>
+          {/*<h4 id="sessionId" className="App-sessionId"></h4>*/}
           <ul id="gameInfo" className="App-gameInfo"></ul>
           <div id="hitOrStand" className="App-hitOrStand">
             <p>What move do you want to take?</p>
             <button id="hit" className="App-hit" name="move">Hit</button>
             <button id="stand" className="App-stand" name="move">Stand</button>
           </div>
-          <div id="deck" className="App-deck">
-            <p>Your Cards:</p>
-          </div>
-          <button id="playAgain" className="App-playAgain" onClick={() => { ReactDOM.render(<Login un={this.state.username} pw={this.state.password} loggedIn="true"/>, document.getElementById('gameInfo')); }}>Play Again</button>
+          <div id="deck" className="App-deck"></div>
+          <button id="playAgain" className="App-playAgain" onClick={() => { this.inputValLi; ReactDOM.render(<Login un={this.state.username} pw={this.state.password} loggedIn="true"/>, document.getElementById('gameInfo')); }}>Play Again</button>
         </div>
         <div id="users" className="App-users">
           <h3>Players:</h3>

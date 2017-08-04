@@ -14,14 +14,9 @@ class Login extends React.Component {
   }
 
   componentDidMount() {
-    let url = 'http://52.54.181.235:3000/api/login?username=' + this.props.un + '&password=' + this.props.pw + '&loggedIn=' + this.props.loggedIn === "true";
+    let url = 'http://52.54.181.235:3000/api/login?username=' + this.props.un + '&password=' + this.props.pw + '&loggedIn=' + this.props.loggedIn;
     console.log("inside componentDidMount and before fetch");
-    fetch(url/*, {
-      headers : {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-       }
-    }*/).then(function(response) {
+    fetch(url).then(function(response) {
       console.log(response);
       if(response.ok) {
         return response.json();
@@ -34,6 +29,7 @@ class Login extends React.Component {
             currentUn: data.user,
             statement: data.statement
           });
+          this.props.callbackSessId(data.sessId);
         }
         console.log("inside fetch");
         this.setState({
