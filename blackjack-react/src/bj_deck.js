@@ -12,7 +12,7 @@ class Deck extends React.Component {
   }
 
   componentDidMount() {
-    let url = 'http://52.54.181.235:8080/api/init?sessId=' + this.props.sessId + '&username=' + this.props.un;
+    let url = 'http://52.54.181.235:3000/api/init?sessId=' + this.props.sessId + '&username=' + this.props.un;
     fetch(url).then(function(response) {
       console.log(response);
       if(response.ok) {
