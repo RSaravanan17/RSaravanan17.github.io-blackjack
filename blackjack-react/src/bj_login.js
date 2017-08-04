@@ -14,7 +14,7 @@ class Login extends React.Component {
   }
 
   componentDidMount() {
-    let url = 'http://52.54.181.235:3000/api/login?username=' + this.props.un + '&password=' + this.props.pw + '&loggedIn=' + this.props.loggedIn;
+    let url = 'http://52.54.181.235:8080/api/login?username=' + this.props.un + '&password=' + this.props.pw + '&loggedIn=' + this.props.loggedIn;
     console.log("inside componentDidMount and before fetch");
     fetch(url).then(function(response) {
       console.log(response);
