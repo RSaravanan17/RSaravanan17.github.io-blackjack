@@ -69,14 +69,14 @@
 [target="black"] {
   width: 50px;
   height: 50px;
-  color: black;
+  color: rgb(0, 0, 0);
   float: left;
 }
 
 [target="red"] {
   width: 50px;
   height: 50px;
-  color: red;
+  color: rgb(235, 0, 0);
   float: left;
 }
 

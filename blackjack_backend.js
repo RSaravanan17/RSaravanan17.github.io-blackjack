@@ -277,7 +277,6 @@ function moveStand(url) {
   }
   updateScore(username, true, sessId);
   return {
-    stand: "You took a stand.",
     gameOver: gameOver,
     dealerHit: dealerHit,
     gameState: gameState

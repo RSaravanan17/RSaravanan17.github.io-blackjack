@@ -7,15 +7,24 @@ class Login extends React.Component {
 
     this.state = {
       correctLogin: false,
-      currentUn: "a",
-      statement: "b",
-      fullStatement: "c"
+      sessId: null,
+      currentUn: null,
+      statement: null,
+      fullStatement: "No statement returned."
     };
+
+    this.passingSessId = this.passingSessId.bind(this);
   }
 
-  componentDidMount() {
+  passingSessId() {
+    this.props.callbackSessId(this.state.sessId);
+  }
+
+  componentWillMount() {
+    this.setState({
+      sessId: 9999
+    });
     let url = 'http://52.54.181.235:3000/api/login?username=' + this.props.un + '&password=' + this.props.pw + '&loggedIn=' + this.props.loggedIn;
-    console.log("inside componentDidMount and before fetch");
     fetch(url).then(function(response) {
       console.log(response);
       if(response.ok) {
@@ -27,9 +36,9 @@ class Login extends React.Component {
           this.setState({
             correctLogin: true,
             currentUn: data.user,
-            statement: data.statement
+            statement: data.statement,
+            sessId: data.sessId
           });
-          this.props.callbackSessId(data.sessId);
         }
         console.log("inside fetch");
         this.setState({
@@ -38,11 +47,14 @@ class Login extends React.Component {
       }).catch(function(error) {
           console.log('There has been a problem with your fetch operation: ' + error.message);
       });
-    console.log("inside componentDidMount and after fetch");
+  }
+
+  componentDidMount() {
+    this.props.loggedIn !== "true" ? this.passingSessId() : null;
   }
 
   render() {
-    return <li>{this.state.fullStatement}</li>;
+    return <li>{this.state.fullStatement} Press 'Submit' again to begin playing.</li>;
   }
 }
 
