@@ -45,8 +45,7 @@ var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
   var result;
 
-  res.setHeader('Access-Control-Allow-Headers', req.header.origin);
-
+  res.setHeader('Access-Control-Allow-Origin', '*');
   if (/^\/api\/login/.test(req.url)) {
     result = login(req.url);
   } else if (/^\/api\/init/.test(req.url)) {
