@@ -91,6 +91,7 @@ class App extends React.Component {
           <div id="hitOrStand" className="App-hitOrStand">
             <p>What move do you want to take?</p>
             <button id="hit" className="App-hit" name="move" onClick={() => {ReactDOM.render(<Hit un={this.state.username} sessId={this.state.sessId} playerInfo={this.state.playerInfo} callbackPlayerInfo={this.setPlayerInfo} />, document.getElementById('gameInfo'))}}>Hit</button>
+            <div className="App-divider" />
             <button id="stand" className="App-stand" name="move"  onClick={() => {ReactDOM.render(<Stand un={this.state.username} sessId={this.state.sessId} playerInfo={this.state.playerInfo} callbackPlayerInfo={this.setPlayerInfo} />, document.getElementById('gameInfo'))}}>Stand</button>
           </div>
           <div id="deck" className="App-deck"></div>

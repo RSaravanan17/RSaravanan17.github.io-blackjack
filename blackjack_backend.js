@@ -28,7 +28,7 @@ var usersRef = ref.child('users');
 
 var app = express();
 app.use(function(req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  /*res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Request-Method', '*');
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
   res.setHeader('Access-Control-Allow-Headers', '*');
@@ -38,12 +38,14 @@ app.use(function(req, res, next) {
     res.end();
     return;
 	}
-  next();
+  next();*/
 });
 
 var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
   var result;
+
+  res.setHeader('Access-Control-Allow-Headers', req.header.origin);
 
   if (/^\/api\/login/.test(req.url)) {
     result = login(req.url);

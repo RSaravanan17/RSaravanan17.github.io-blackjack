@@ -20,44 +20,54 @@
 }
 
 .App-submit {
-  font-size: 20px;
-  font-family: Consolas, monospace;
+  height: 35px;
+  font-size: 25px;
+  font-family: Georgia, monospace;
   text-align: center;
 }
 
 .App-hitOrStand {
-  width: 375px;
+  width: 415px;
   height: 140px;
   background: rgba(255, 0, 0, 0.75);
   float: left;
-  font-size: 20px;
+  font-size: 25px;
 }
 
 .App-hit {
+  width: 100px;
   display: inline-block;
-  font-family: Consolas, monospace;
-  font-size: 20px;
+  font-family: Georgia, monospace;
+  font-size: 25px;
   text-align: center;
 }
 
-.App-stand {
+.App-divider {
+  width: 45px;
+  height: auto;
   display: inline-block;
-  font-family: Consolas, monospace;
-  font-size: 20px;
+}
+
+.App-stand {
+  width: 100px;
+  display: inline-block;
+  font-family: Georgia, monospace;
+  font-size: 25px;
   text-align: center;
 }
 
 .App-deck {
   font-size: 25px;
-  width: 455px;
+  width: 415px;
   height: 140px;
   background: rgba(0, 220, 220, 0.75);
   float: left;
 }
 
 .App-playAgain {
-  font-size: 20px;
-  font-family: Consolas, monospace;
+  height: 35px;
+  font-size: 25px;
+  font-family: Georgia, monospace;
   text-align: center;
 }
 
@@ -81,16 +91,16 @@
 }
 
 li {
-  font-size: 20px;
-  font-family: Consolas, monospace;
+  font-size: 25px;
+  font-family: Georgia, monospace;
 }
 
 p {
-  font-family: Consolas, monospace;
+  font-family: Georgia, monospace;
   text-align: center;
 }
 
 div {
-  font-family: Consolas, monospace;
+  font-family: Georgia, monospace;
   text-align: center;
 }

@@ -52,7 +52,7 @@ class Hit extends React.Component {
   }
 
   render() {
-    return <li>You took a hit. Your cards are now {JSON.stringify(this.state.playerHand)} and your score is {this.state.playerScore}.{this.state.gameState}</li>;
+    return <li>You took a hit. Your cards are now {JSON.stringify(this.state.playerHand)} and your score is {this.state.playerScore}. {this.state.gameState}</li>;
   }
 }
 

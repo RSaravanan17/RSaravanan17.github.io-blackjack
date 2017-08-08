@@ -107,7 +107,7 @@ var bj = (function() {
       response.json().then(function(data) {
         let gameList1 = document.getElementById('gameInfo');
         let next1 = document.createElement('li');
-        next1.appendChild(document.createTextNode(data.stand));
+        next1.appendChild(document.createTextNode("You took a stand."));
         gameList1.appendChild(next1);
 
         if (data.gameOver) {

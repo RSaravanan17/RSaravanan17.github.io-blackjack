@@ -46,7 +46,7 @@ class InitGame extends React.Component {
         console.log('There has been a problem with your fetch operation: ' + error.message);
     });
 
-    let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
+    /*let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
     var deck = [];
     for (var i = 0; i < cardNums.length; i++) {
       deck.push(cardNums[i] + " of Clubs");
@@ -65,7 +65,7 @@ class InitGame extends React.Component {
       playerScore: 99,
       gameOver: false,
       gameState: "qwerty"
-    });
+    });*/
   }
 
   componentDidMount() {

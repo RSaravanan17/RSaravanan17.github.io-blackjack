@@ -21,9 +21,9 @@ class Login extends React.Component {
   }
 
   componentWillMount() {
-    this.setState({
+    /*this.setState({
       sessId: 9999
-    });
+    });*/
     let url = 'http://52.54.181.235:3000/api/login?username=' + this.props.un + '&password=' + this.props.pw + '&loggedIn=' + this.props.loggedIn;
     fetch(url).then(function(response) {
       console.log(response);
