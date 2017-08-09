@@ -211,10 +211,11 @@ function updateScore(username, bothStand, sessId) {
       gameState = "The dealer has a score of exactly 21. You lost.";
       gameOver = true;
     } else if (playerScore === 21) {
-      gameState = "Your score is exactly 21. Congratulations, you win!.";
+      gameState = "Since your score is exactly 21, you win!.";
       gameOver = true;
       win = true;
     } else {
+      gameState = "Keep playing.";
       gameOver = false;
     }
   }
