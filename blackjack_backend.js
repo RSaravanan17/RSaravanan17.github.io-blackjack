@@ -118,22 +118,20 @@ function login(url) {
 
 function updatePlayerList() {
   let listOfPlayers = [];
-  let listOfWins = [];
-  let listOfLosses = [];
 
   usersRef.on("child_added", function(data, prevChildKey) {
     let playerInfo = data.val();
-    listOfPlayers.push(playerInfo.un);
-    listOfWins.push(playerInfo.win);
-    listOfLosses.push(playerInfo.loss);
+    listOfPlayers.push({
+      un: playerInfo.un,
+      win: playerInfo.win,
+      loss: playerInfo.loss
+    });
   }, function(err) {
     console.log(err);
   });
 
   return {
-    listOfPlayers: listOfPlayers,
-    listOfWins: listOfWins,
-    listOfLosses: listOfLosses
+    listOfPlayers: listOfPlayers
   }
 }
 
