@@ -78,8 +78,7 @@ server.listen(3000);
 function login(url) {
   let statement = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
-  let password = url.slice(url.indexOf('password=') + 9, url.lastIndexOf('&'));
-  let loggedIn = url.slice(url.indexOf('loggedIn=') + 9) === 'true';
+  let password = url.slice(url.indexOf('password=') + 9);
   let sessId = JSON.stringify(new Date().getTime());
   let playerFound = false;
 
