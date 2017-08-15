@@ -62,7 +62,8 @@ server.listen(3000);
 
 function login(url) {
   let sessId = JSON.stringify(new Date().getTime());
-  let statement[sessId] = "";
+  let statement = [];
+  statement[sessId] = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
   let password = url.slice(url.indexOf('password=') + 9);
   let playerFound[sessId] = false;
