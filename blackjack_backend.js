@@ -1,11 +1,11 @@
-var currentPlayer;
+var currentPlayer = [];
 var deck = [];
-var dealerScore;
-var playerScore;
+var dealerScore = [];
+var playerScore = [];
 var dealerHand = [];
 var playerHand = [];
-var gameOver;
-var gameState = "";
+var gameOver = [];
+var gameState = [];
 
 var http = require('http');
 var url = require('url');
@@ -25,21 +25,6 @@ firebase.initializeApp(config);
 var db = firebase.database();
 var ref = db.ref('server/saving-data/blackjack');
 var usersRef = ref.child('users');
-
-var app = express();
-app.use(function(req, res, next) {
-  /*res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Request-Method', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
-  res.setHeader('Access-Control-Allow-Headers', '*');
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
-    return;
-	}
-  next();*/
-});
 
 var server = http.createServer(function(req, res) {
   var parsedUrl = url.parse(req.url, true);
@@ -76,28 +61,28 @@ server.on('listening', function() {
 server.listen(3000);
 
 function login(url) {
-  let statement = "";
+  let sessId = JSON.stringify(new Date().getTime());
+  let statement[sessId] = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
   let password = url.slice(url.indexOf('password=') + 9);
-  let sessId = JSON.stringify(new Date().getTime());
-  let playerFound = false;
+  let playerFound[sessId] = false;
 
   usersRef.on("child_added", function(data, prevChildKey) {
-    let playerInfo = data.val();
-    if (playerInfo.un === username) {
-      playerFound = true;
-      currentPlayer = data.val();
+    let playerInfo[sessId] = data.val();
+    if (playerInfo[sessId].un === username) {
+      playerFound[sessId] = true;
+      currentPlayer[sessId] = data.val();
     }
-    if (playerFound) {
-      if (playerInfo.pw === password) {
-        statement = "Welcome back to Blackjack! You have " + playerInfo.win + " win(s) and " + playerInfo.loss + " loss(es).";
+    if (playerFound[sessId]) {
+      if (playerInfo[sessId].pw === password) {
+        statement[sessId] = "Welcome back to Blackjack! You have " + playerInfo[sessId].win + " win(s) and " + playerInfo[sessId].loss + " loss(es).";
       }
     }
   }, function(err) {
     console.log(err);
   });
 
-  if (!playerFound) {
+  if (!playerFound[sessId]) {
     usersRef.update({
       [username]: {
         'un': username,
@@ -106,12 +91,12 @@ function login(url) {
         'loss': 0
       }
     });
-    statement = "Welcome to Blackjack! You can choose to 'hit' or 'stand' in the red area and you can see your hand in the blue area.";
+    statement[sessId] = "Welcome to Blackjack! You can choose to 'hit' or 'stand' in the red area and you can see your hand in the blue area.";
   }
 
   return {
     user: username,
-    statement: statement,
+    statement: statement[sessId],
     sessId: sessId
   };
 }
@@ -135,89 +120,90 @@ function updatePlayerList() {
   }
 }
 
-function scoreWithoutAce(person, personScore) {
-  personScore = 0;
-  for (var i = 0; i < person.length; i++) {
-    if (person[i].includes("Two")) {
-      personScore += 2;
-    } else if (person[i].includes("Three")) {
-      personScore += 3;
-    } else if (person[i].includes("Four")) {
-      personScore += 4;
-    } else if (person[i].includes("Five")) {
-      personScore += 5;
-    } else if (person[i].includes("Six")) {
-      personScore += 6;
-    } else if (person[i].includes("Seven")) {
-      personScore += 7;
-    } else if (person[i].includes("Eight")) {
-      personScore += 8;
-    } else if (person[i].includes("Nine")) {
-      personScore += 9;
-    } else if (person[i].includes("Ten") || person[i].includes("Jack") || person[i].includes("Queen") || person[i].includes("King")) {
-      personScore += 10;
+function scoreWithoutAce(deck, score) {
+  score = 0;
+  for (var i = 0; i < deck.length; i++) {
+    if (deck[i].includes("Two")) {
+      score += 2;
+    } else if (deck[i].includes("Three")) {
+      score += 3;
+    } else if (deck[i].includes("Four")) {
+      score += 4;
+    } else if (deck[i].includes("Five")) {
+      score += 5;
+    } else if (deck[i].includes("Six")) {
+      score += 6;
+    } else if (deck[i].includes("Seven")) {
+      score += 7;
+    } else if (deck[i].includes("Eight")) {
+      score += 8;
+    } else if (deck[i].includes("Nine")) {
+      score += 9;
+    } else if (deck[i].includes("Ten") || deck[i].includes("Jack") || deck[i].includes("Queen") || deck[i].includes("King")) {
+      score += 10;
     }
   }
-  return personScore;
+  return score;
 }
 
-function scoreWithAce(person, personScore) {
-  for (var i = 0; i < person.length; i++) {
-    if (person[i].includes("Ace")) {
-      if (personScore <= 10) {
-        personScore += 11;
+function scoreWithAce(deck, score) {
+  for (var i = 0; i < deck.length; i++) {
+    if (deck[i].includes("Ace")) {
+      if (score <= 10) {
+        score += 11;
       } else {
-        personScore += 1;
+        score += 1;
       }
     }
   }
-  return personScore;
+  return score;
 }
 
 function updateScore(username, bothStand, sessId) {
-  let tie = false;
-  let win = false;
+  gameState[sessId] = "";
+  let tie[sessId] = false;
+  let win[sessId] = false;
 
-  dealerScore = scoreWithAce(dealerHand, scoreWithoutAce(dealerHand, dealerScore));
-  playerScore = scoreWithAce(playerHand, scoreWithoutAce(playerHand, playerScore));
+  dealerScore[sessId] = scoreWithAce(dealerHand[sessId], scoreWithoutAce(dealerHand[sessId], dealerScore[sessId]));
+  playerScore[sessId] = scoreWithAce(playerHand[sessId], scoreWithoutAce(playerHand[sessId], playerScore[sessId]));
 
   if (bothStand) {
-    gameOver = true;
-    if (dealerScore > playerScore) {
-      gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". You lose.";
-    } else if (playerScore > dealerScore) {
-      gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". Congratulations, you win!";
-      win = true;
-    } else if (playerScore === dealerScore) {
-      gameState = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore + " and your final score is " + playerScore + ". The game ends in a tie.";
-      tie = true;
+    gameOver[sessId] = true;
+    if (dealerScore[sessId] > playerScore[sessId]) {
+      gameState[sessId] = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore[sessId] + " and your final score is " + playerScore + ". You lose.";
+    } else if (playerScore[sessId] > dealerScore[sessId]) {
+      gameState[sessId] = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore[sessId] + " and your final score is " + playerScore + ". Congratulations, you win!";
+      win[sessId] = true;
+    } else if (playerScore[sessId] === dealerScore[sessId]) {
+      gameState[sessId] = "Since you and the dealer both took a stand, the game is over. The dealer's final score is " + dealerScore[sessId] + " and your final score is " + playerScore + ". The game ends in a tie.";
+      tie[sessId] = true;
     }
   } else {
-    if (playerScore > 21) {
-      gameState = "Your score of " + playerScore + " is over 21 so the game is over. You lost.";
-      gameOver = true;
-    } else if (dealerScore > 21) {
-      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. Congratulations, you win!";
-      gameOver = true;
-      win = true;
-    } else if (dealerScore === 21 && playerScore === 21) {
-      gameState = "Since you and the dealer both have a score of 21, the game ends in a tie.";
-      gameOver = true;
-      tie = true;
-    } else if (dealerScore === 21) {
-      gameState = "The dealer has a score of exactly 21. You lost.";
-      gameOver = true;
-    } else if (playerScore === 21) {
-      gameState = "Since your score is exactly 21, you win!.";
-      gameOver = true;
-      win = true;
+    if (playerScore[sessId] > 21) {
+      gameState[sessId] = "Your score of " + playerScore[sessId] + " is over 21 so the game is over. You lost.";
+      gameOver[sessId] = true;
+    } else if (dealerScore[sessId] > 21) {
+      gameState[sessId] = "The dealer has a bust because his score of " + dealerScore[sessId] + " is over 21. Congratulations, you win!";
+      gameOver[sessId] = true;
+      win[sessId] = true;
+    } else if (dealerScore[sessId] === 21 && playerScore[sessId] === 21) {
+      gameState[sessId] = "Since you and the dealer both have a score of 21, the game ends in a tie.";
+      gameOver[sessId] = true;
+      tie[sessId] = true;
+    } else if (dealerScore[sessId] === 21) {
+      gameState[sessId] = "The dealer has a score of exactly 21. You lost.";
+      gameOver[sessId] = true;
+    } else if (playerScore[sessId] === 21) {
+      gameState[sessId] = "Since your score is exactly 21, you win!.";
+      gameOver[sessId] = true;
+      win[sessId] = true;
     } else {
-      gameState = "Continue playing.";
-      gameOver = false;
+      gameState[sessId] = "Continue playing.";
+      gameOver[sessId] = false;
     }
   }
-  if (gameOver && !tie) {
-    if (win) {
+  if (gameOver[sessId] && !tie[sessId]) {
+    if (win[sessId]) {
       usersRef.child(username).update({
         'win': currentPlayer.win + 1
       });
@@ -237,55 +223,49 @@ function randomCard(deck) {
 }
 
 function deal(username, sessId) {
-  dealerHand.push(randomCard(deck));
-  dealerHand.push(randomCard(deck));
-  playerHand.push(randomCard(deck));
-  playerHand.push(randomCard(deck));
+  dealerHand[sessId].push(randomCard(deck));
+  dealerHand[sessId].push(randomCard(deck));
+  playerHand[sessId].push(randomCard(deck));
+  playerHand[sessId].push(randomCard(deck));
   updateScore(username, false, sessId);
 }
 
 function moveHit(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  playerHand.push(randomCard(deck));
+  playerHand[sessId].push(randomCard(deck));
   updateScore(username, false, sessId);
   return {
-    gameOver: gameOver,
-    gameState: gameState,
-    playerHand: playerHand,
-    playerScore: playerScore
+    gameOver: gameOver[sessId],
+    gameState: gameState[sessId],
+    playerHand: playerHand[sessId],
+    playerScore: playerScore[sessId]
   };
 }
 
 function moveStand(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  let dealerHit = 0;
-  while (dealerScore < 17) {
-    dealerHit++;
-    dealerHand.push(randomCard(deck));
+  let dealerHit[sessId] = 0;
+  while (dealerScore[sessId] < 17) {
+    dealerHit[sessId]++;
+    dealerHand[sessId].push(randomCard(deck));
     updateScore(username, false, sessId);
-    if (gameOver && dealerScore > 21) {
+    if (gameOver[sessId] && dealerScore[sessId] > 21) {
       return {
-        gameOver: gameOver,
-        dealerHit: dealerHit,
-        gameState: gameState,
+        gameOver: gameOver[sessId],
+        dealerHit: dealerHit[sessId],
+        gameState: gameState[sessId],
         bust: true
-      };
-    } else if (gameOver) {
-      return {
-        gameOver: gameOver,
-        dealerHit: dealerHit,
-        gameState: gameState,
-        bust: false
       };
     }
   }
   updateScore(username, true, sessId);
   return {
-    gameOver: gameOver,
-    dealerHit: dealerHit,
-    gameState: gameState
+    gameOver: gameOver[sessId],
+    dealerHit: dealerHit[sessId],
+    gameState: gameState[sessId],
+    bust: false
   };
 }
 
@@ -308,9 +288,9 @@ function initGame(url) {
   }
   deal(username, sessId);
   return {
-    playerHand: playerHand,
-    playerScore: playerScore,
-    gameOver: gameOver,
-    gameState: gameState
+    playerHand: playerHand[sessId],
+    playerScore: playerScore[sessId],
+    gameOver: gameOver[sessId],
+    gameState: gameState[sessId]
   };
 }
