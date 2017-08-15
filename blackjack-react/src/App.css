@@ -1,12 +1,12 @@
 .App-background {
   background: rgba(100, 100, 100, 0.50);
-  width: 1230px;
+  width: 1200px;
   overflow: hidden;
 }
 
 .App-gamePlay {
   background: rgba(10, 125, 10, 0.75);
-  width: 830px;
+  width: 750px;
   float: left;
 }
 
@@ -27,7 +27,7 @@
 }
 
 .App-hitOrStand {
-  width: 415px;
+  width: 375px;
   height: 140px;
   background: rgba(255, 0, 0, 0.75);
   float: left;
@@ -43,7 +43,7 @@
 }
 
 .App-divider {
-  width: 45px;
+  width: 35px;
   height: auto;
   display: inline-block;
 }
@@ -58,7 +58,7 @@
 
 .App-deck {
   font-size: 25px;
-  width: 415px;
+  width: 375px;
   height: 140px;
   background: rgba(0, 220, 220, 0.75);
   float: left;

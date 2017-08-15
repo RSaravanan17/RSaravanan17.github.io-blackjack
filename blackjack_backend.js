@@ -197,7 +197,7 @@ function updateScore(username, bothStand, sessId) {
       gameState = "Your score of " + playerScore + " is over 21 so the game is over. You lost.";
       gameOver = true;
     } else if (dealerScore > 21) {
-      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. Congratulations, you win!.";
+      gameState = "The dealer has a bust because his score of " + dealerScore + " is over 21. Congratulations, you win!";
       gameOver = true;
       win = true;
     } else if (dealerScore === 21 && playerScore === 21) {
@@ -212,7 +212,7 @@ function updateScore(username, bothStand, sessId) {
       gameOver = true;
       win = true;
     } else {
-      gameState = "Keep playing.";
+      gameState = "Continue playing.";
       gameOver = false;
     }
   }
@@ -265,12 +265,19 @@ function moveStand(url) {
     dealerHit++;
     dealerHand.push(randomCard(deck));
     updateScore(username, false, sessId);
-    if (gameOver) {
+    if (gameOver && dealerScore > 21) {
       return {
-        stand: "You took a stand.",
         gameOver: gameOver,
         dealerHit: dealerHit,
-        gameState: gameState
+        gameState: gameState,
+        bust: true
+      };
+    } else if (gameOver) {
+      return {
+        gameOver: gameOver,
+        dealerHit: dealerHit,
+        gameState: gameState,
+        bust: false
       };
     }
   }
