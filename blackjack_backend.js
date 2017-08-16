@@ -236,7 +236,7 @@ function deal(username, sessId) {
 function moveHit(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  playerHand[sessId].push(randomCard(deck[sessId], sessId));
+  playerHand[sessId] = [playerHand[sessId], randomCard(deck[sessId], sessId)];
   updateScore(username, false, sessId);
   return {
     gameOver: gameOver[sessId],
