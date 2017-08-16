@@ -220,7 +220,7 @@ function updateScore(username, bothStand, sessId) {
   }
 }
 
-function randomCard(deck) {
+function randomCard(deck, sessId) {
   var index = Math.floor(Math.random() * deck.length);
   var newCard = deck[sessId][index];
   deck[sessId].splice(index, 1);
@@ -228,15 +228,15 @@ function randomCard(deck) {
 }
 
 function deal(username, sessId) {
-  dealerHand[sessId].push(randomCard(deck[sessId]), randomCard(deck[sessId]));
-  playerHand[sessId].push(randomCard(deck[sessId]), randomCard(deck[sessId]));
+  dealerHand[sessId].push(randomCard(deck[sessId], sessId), randomCard(deck[sessId], sessId));
+  playerHand[sessId].push(randomCard(deck[sessId], sessId), randomCard(deck[sessId], sessId));
   updateScore(username, false, sessId);
 }
 
 function moveHit(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  playerHand[sessId].push(randomCard(deck));
+  playerHand[sessId].push(randomCard(deck[sessId], sessId));
   updateScore(username, false, sessId);
   return {
     gameOver: gameOver[sessId],
@@ -253,7 +253,7 @@ function moveStand(url) {
   dealerHit[sessId] = 0;
   while (dealerScore[sessId] < 17) {
     dealerHit[sessId]++;
-    dealerHand[sessId].push(randomCard(deck));
+    dealerHand[sessId].push(randomCard(deck[sessId], sessId));
     updateScore(username, false, sessId);
     if (gameOver[sessId] && dealerScore[sessId] > 21) {
       return {
