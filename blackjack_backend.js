@@ -286,10 +286,7 @@ var blackjack_backend = (function() {
     playerHand[sessId] = [];
     gameOver[sessId] = false;
     for (var i = 0; i < cardNums.length; i++) {
-      deck[sessId].push(cardNums[i] + " of Clubs");
-      deck[sessId].push(cardNums[i] + " of Spades");
-      deck[sessId].push(cardNums[i] + " of Diamonds");
-      deck[sessId].push(cardNums[i] + " of Hearts");
+      deck[sessId].push(cardNums[i] + " of Clubs", cardNums[i] + " of Spades", cardNums[i] + " of Diamonds", cardNums[i] + " of Hearts");
     }
     deal(username, sessId);
     return {
