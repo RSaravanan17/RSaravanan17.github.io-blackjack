@@ -1,11 +1,11 @@
-var currentPlayer = {};
-var deck = {};
-var dealerScore = {};
-var playerScore = {};
-var dealerHand = {};
-var playerHand = {};
-var gameOver = {};
-var gameState = {};
+var currentPlayer = [];
+var deck = [];
+var dealerScore = [];
+var playerScore = [];
+var dealerHand = [];
+var playerHand = [];
+var gameOver = [];
+var gameState = [];
 
 var http = require('http');
 var url = require('url');
@@ -62,15 +62,15 @@ server.listen(3000);
 
 function login(url) {
   let sessId = JSON.stringify(new Date().getTime());
-  let statement = {};
+  let statement = [];
   statement[sessId] = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
   let password = url.slice(url.indexOf('password=') + 9);
-  let playerFound = {};
+  let playerFound = [];
   playerFound[sessId] = false;
 
   usersRef.on("child_added", function(data, prevChildKey) {
-    let playerInfo = {};
+    let playerInfo = [];
     playerInfo[sessId] = data.val();
     if (playerInfo[sessId].un === username) {
       playerFound[sessId] = true;
@@ -164,9 +164,9 @@ function scoreWithAce(deck, score) {
 
 function updateScore(username, bothStand, sessId) {
   gameState[sessId] = "";
-  let tie = {};
+  let tie = [];
   tie[sessId] = false;
-  let win = {};
+  let win = [];
   win[sessId] = false;
 
   dealerScore[sessId] = scoreWithAce(dealerHand[sessId], scoreWithoutAce(dealerHand[sessId], dealerScore[sessId]));
@@ -221,7 +221,7 @@ function updateScore(username, bothStand, sessId) {
 }
 
 function randomCard(deck, sessId) {
-  var index = Math.floor(Math.random() * deck.length);
+  var index = Math.floor(Math.random() * deck[sessId].length);
   var newCard = deck[sessId][index];
   deck[sessId].splice(index, 1);
   return newCard;
@@ -249,7 +249,7 @@ function moveHit(url) {
 function moveStand(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  let dealerHit = {};
+  let dealerHit = [];
   dealerHit[sessId] = 0;
   while (dealerScore[sessId] < 17) {
     dealerHit[sessId]++;
