@@ -249,7 +249,8 @@ function moveHit(url) {
 function moveStand(url) {
   let sessId = url.slice(url.indexOf('sessId=') + 7, url.indexOf('&'));
   let username = url.slice(url.indexOf('username=') + 9);
-  let dealerHit[sessId] = 0;
+  let dealerHit = {};
+  dealerHit[sessId] = 0;
   while (dealerScore[sessId] < 17) {
     dealerHit[sessId]++;
     dealerHand[sessId].push(randomCard(deck));
