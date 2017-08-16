@@ -1,11 +1,11 @@
-var currentPlayer = [];
-var deck = [];
-var dealerScore = [];
-var playerScore = [];
-var dealerHand = [];
-var playerHand = [];
-var gameOver = [];
-var gameState = [];
+var currentPlayer = {};
+var deck = {};
+var dealerScore = {};
+var playerScore = {};
+var dealerHand = {};
+var playerHand = {};
+var gameOver = {};
+var gameState = {};
 
 var http = require('http');
 var url = require('url');
@@ -62,14 +62,16 @@ server.listen(3000);
 
 function login(url) {
   let sessId = JSON.stringify(new Date().getTime());
-  let statement = [];
+  let statement = {};
   statement[sessId] = "";
   let username = url.slice(url.indexOf('username=') + 9, url.indexOf('&'));
   let password = url.slice(url.indexOf('password=') + 9);
-  let playerFound[sessId] = false;
+  let playerFound = {};
+  playerFound[sessId] = false;
 
   usersRef.on("child_added", function(data, prevChildKey) {
-    let playerInfo[sessId] = data.val();
+    let playerInfo = {};
+    playerInfo[sessId] = data.val();
     if (playerInfo[sessId].un === username) {
       playerFound[sessId] = true;
       currentPlayer[sessId] = data.val();
@@ -162,8 +164,10 @@ function scoreWithAce(deck, score) {
 
 function updateScore(username, bothStand, sessId) {
   gameState[sessId] = "";
-  let tie[sessId] = false;
-  let win[sessId] = false;
+  let tie = {};
+  tie[sessId] = false;
+  let win = {};
+  win[sessId] = false;
 
   dealerScore[sessId] = scoreWithAce(dealerHand[sessId], scoreWithoutAce(dealerHand[sessId], dealerScore[sessId]));
   playerScore[sessId] = scoreWithAce(playerHand[sessId], scoreWithoutAce(playerHand[sessId], playerScore[sessId]));
@@ -218,16 +222,14 @@ function updateScore(username, bothStand, sessId) {
 
 function randomCard(deck) {
   var index = Math.floor(Math.random() * deck.length);
-  var newCard = deck[index];
-  deck.splice(index, 1);
+  var newCard = deck[sessId][index];
+  deck[sessId].splice(index, 1);
   return newCard;
 }
 
 function deal(username, sessId) {
-  dealerHand[sessId].push(randomCard(deck));
-  dealerHand[sessId].push(randomCard(deck));
-  playerHand[sessId].push(randomCard(deck));
-  playerHand[sessId].push(randomCard(deck));
+  dealerHand[sessId].push(randomCard(deck[sessId]), randomCard(deck[sessId]));
+  playerHand[sessId].push(randomCard(deck[sessId]), randomCard(deck[sessId]));
   updateScore(username, false, sessId);
 }
 
@@ -275,17 +277,17 @@ function initGame(url) {
   let username = url.slice(url.indexOf('username=') + 9);
 
   let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
-  deck = [];
-  dealerScore = 0;
-  playerScore = 0;
-  dealerHand = [];
-  playerHand = [];
-  gameOver = false;
+  deck[sessId] = [];
+  dealerScore[sessId] = 0;
+  playerScore[sessId] = 0;
+  dealerHand[sessId] = [];
+  playerHand[sessId] = [];
+  gameOver[sessId] = false;
   for (var i = 0; i < cardNums.length; i++) {
-    deck.push(cardNums[i] + " of Clubs");
-    deck.push(cardNums[i] + " of Spades");
-    deck.push(cardNums[i] + " of Diamonds");
-    deck.push(cardNums[i] + " of Hearts");
+    deck[sessId].push(cardNums[i] + " of Clubs");
+    deck[sessId].push(cardNums[i] + " of Spades");
+    deck[sessId].push(cardNums[i] + " of Diamonds");
+    deck[sessId].push(cardNums[i] + " of Hearts");
   }
   deal(username, sessId);
   return {
