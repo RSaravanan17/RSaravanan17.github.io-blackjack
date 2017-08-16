@@ -220,9 +220,9 @@ function updateScore(username, bothStand, sessId) {
   }
 }
 
-function randomCard(deck, sessId) {
-  var index = Math.floor(Math.random() * deck[sessId].length);
-  var newCard = deck[sessId][index];
+function randomCard(currentDeck, sessId) {
+  var index = Math.floor(Math.random() * currentDeck.length);
+  var newCard = currentDeck[index];
   deck[sessId].splice(index, 1);
   return newCard;
 }
