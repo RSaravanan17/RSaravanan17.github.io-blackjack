@@ -124,35 +124,35 @@ var blackjack_backend = (function() {
     }
   }
 
-  function scoreWithoutAce(deck, score) {
+  function scoreWithoutAce(currentDeck, score) {
     score = 0;
-    for (var i = 0; i < deck.length; i++) {
-      if (deck[i].includes("Two")) {
+    for (var i = 0; i < currentDeck.length; i++) {
+      if (currentDeck[i].includes("Two")) {
         score += 2;
-      } else if (deck[i].includes("Three")) {
+      } else if (currentDeck[i].includes("Three")) {
         score += 3;
-      } else if (deck[i].includes("Four")) {
+      } else if (currentDeck[i].includes("Four")) {
         score += 4;
-      } else if (deck[i].includes("Five")) {
+      } else if (currentDeck[i].includes("Five")) {
         score += 5;
-      } else if (deck[i].includes("Six")) {
+      } else if (currentDeck[i].includes("Six")) {
         score += 6;
-      } else if (deck[i].includes("Seven")) {
+      } else if (currentDeck[i].includes("Seven")) {
         score += 7;
-      } else if (deck[i].includes("Eight")) {
+      } else if (currentDeck[i].includes("Eight")) {
         score += 8;
-      } else if (deck[i].includes("Nine")) {
+      } else if (currentDeck[i].includes("Nine")) {
         score += 9;
-      } else if (deck[i].includes("Ten") || deck[i].includes("Jack") || deck[i].includes("Queen") || deck[i].includes("King")) {
+      } else if (currentDeck[i].includes("Ten") || currentDeck[i].includes("Jack") || currentDeck[i].includes("Queen") || currentDeck[i].includes("King")) {
         score += 10;
       }
     }
     return score;
   }
 
-  function scoreWithAce(deck, score) {
-    for (var i = 0; i < deck.length; i++) {
-      if (deck[i].includes("Ace")) {
+  function scoreWithAce(currentDeck, score) {
+    for (var i = 0; i < currentDeck.length; i++) {
+      if (currentDeck[i].includes("Ace")) {
         if (score <= 10) {
           score += 11;
         } else {
