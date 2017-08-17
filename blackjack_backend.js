@@ -279,12 +279,12 @@ var blackjack_backend = (function() {
     let username = url.slice(url.indexOf('username=') + 9);
 
     let cardNums = ["Ace", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
-    deck[sessId] = [];
-    dealerScore[sessId] = 0;
-    playerScore[sessId] = 0;
-    dealerHand[sessId] = [];
-    playerHand[sessId] = [];
-    gameOver[sessId] = false;
+    this.deck[sessId] = [];
+    this.dealerScore[sessId] = 0;
+    this.playerScore[sessId] = 0;
+    this.dealerHand[sessId] = [];
+    this.playerHand[sessId] = [];
+    this.gameOver[sessId] = false;
     for (var i = 0; i < cardNums.length; i++) {
       deck[sessId].push(cardNums[i] + " of Clubs", cardNums[i] + " of Spades", cardNums[i] + " of Diamonds", cardNums[i] + " of Hearts");
     }
