@@ -211,11 +211,11 @@
     if (gameOver[sessId] && !tie[sessId]) {
       if (win[sessId]) {
         usersRef.child(username).update({
-          'win': currentPlayer.win + 1
+          'win': currentPlayer[sessId].win + 1
         });
       } else {
         usersRef.child(username).update({
-          'loss': currentPlayer.loss + 1
+          'loss': currentPlayer[sessId].loss + 1
         });
       }
     }
@@ -504,8 +504,8 @@ var blackjack_backend = (function() {
         gameOver = false;
       }
     }
-    if (gameOver[sessId] && !tie[sessId]) {
-      if (win[sessId]) {
+    if (gameOver && !tie) {
+      if (win) {
         usersRef.child(username).update({
           'win': currentPlayer.win + 1
         });
