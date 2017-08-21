@@ -404,11 +404,13 @@ var blackjack_backend = (function() {
   }
 
   function updatePlayerList() {
+    let getPlayers = [];
     let listOfPlayers = [];
-
+    let tempWin = -1;
+    let tempIndex = -1;
     usersRef.on("child_added", function(data, prevChildKey) {
       let playerInfo = data.val();
-      listOfPlayers.push({
+      getPlayers.push({
         un: playerInfo.un,
         win: playerInfo.win,
         loss: playerInfo.loss
@@ -416,7 +418,20 @@ var blackjack_backend = (function() {
     }, function(err) {
       console.log(err);
     });
-
+    while (getPlayers.length > 0) {
+      for (var i = 0; i < getPlayers.length; i++) {
+        if (tempWin < getPlayers[i].win) {
+          tempWin = getPlayers[i].win;
+          tempIndex = i;
+        }
+      }
+      listOfPlayers.push({
+        un: getPlayers[tempIndex].un,
+        win: getPlayers[tempIndex].win,
+        loss: getPlayers[tempIndex].loss
+      });
+      delete getPlayers[tempIndex];
+    }
     return {
       listOfPlayers: listOfPlayers
     }
