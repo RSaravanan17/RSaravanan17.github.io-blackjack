@@ -83,26 +83,16 @@
 }
 
 [target="black"] {
-  border-style: solid;
-  border-left-width: 5px;
-  border-color: rgb(0, 200, 200);
-  background-color: rgb(235, 235, 235);
-  width: 45px;
+  width: 50px;
   height: 50px;
-  line-height: 50px;
   font-size: 22px;
   color: rgb(0, 0, 0);
   float: left;
 }
 
 [target="red"] {
-  border-style: solid;
-  border-left-width: 5px;
-  border-color: rgb(0, 200, 200);
-  background-color: rgb(235, 235, 235);
-  width: 45px;
+  width: 50px;
   height: 50px;
-  line-height: 50px;
   font-size: 22px;
   color: rgb(235, 0, 0);
   float: left;
