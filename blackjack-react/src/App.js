@@ -249,12 +249,14 @@ class App extends React.Component {
             onClick={() => {
               this.hitClicked();
               this.requestHit();
+              this.updatePlayerList();
             }}>Hit</button>
             <div className="App-divider" />
             <button id="stand" className="App-stand" name="move" disabled={(this.state.gameOver || !this.state.correctLogin || !(this.state.playerHand.length > 0))}
             onClick={() => {
               this.standClicked();
               this.requestStand();
+              this.updatePlayerList();
             }}>Stand</button>
           </div>
           <div id="deck" className="App-deck">

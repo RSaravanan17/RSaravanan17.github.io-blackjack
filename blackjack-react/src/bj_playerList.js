@@ -4,15 +4,17 @@ import ReactDOM from 'react-dom';
 class PlayerList extends React.Component {
   render() {
     if (this.props.listOfPlayers.length > 0) {
-      let orderPlayers = [];
+      /*let orderPlayers = [];
       let localPlayers = this.props.listOfPlayers;
       let tempWin = -1;
       let tempIndex = -1;
       while (localPlayers.length > 0) {
         for (var i = 0; i < localPlayers.length; i++) {
-          if (tempWin < localPlayers[i].win) {
-            tempWin = localPlayers[i].win;
-            tempIndex = i;
+          if (localPlayers[i] !== undefined) {
+            if (tempWin < localPlayers[i].win) {
+              tempWin = localPlayers[i].win;
+              tempIndex = i;
+            }
           }
         }
         orderPlayers.push({
@@ -20,12 +22,12 @@ class PlayerList extends React.Component {
           win: localPlayers[tempIndex].win,
           loss: localPlayers[tempIndex].loss
         });
-        delete localPlayers[tempIndex];
-      }
+        localPlayers.splice(tempIndex, 1);
+      }*/
       return (
         <div>
         {
-          orderPlayers.map((player, i) => {
+          this.props.listOfPlayers.map((player, i) => {
             return <li key={i} id={player.un}>User: {player.un} | Won: {player.win} | Lost: {player.loss}</li>;
           })
         }
