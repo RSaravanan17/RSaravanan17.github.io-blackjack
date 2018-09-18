@@ -2,4 +2,4 @@
 
 Simulates a game of Blackjack
 
-Each time the page is loaded, the player is asked for his name. The player's name is then used to check if the player is a new player or a returning player. If the player is a new player, then information about the simulation is displayed. If the player is a returning player, then his win count is displayed. The player can make a move in the red box at the bottom left. The player can see his hand in the blue box at the bottom right. The player can see the gameplay in the green box at the top.
+Each time the page is loaded, the player is asked to login using a username and password. Each user's login information is stored and accessed through Google Firebase. If the player is a new player, then information and instructions about the simulation are displayed. If the player is a returning player, then his win/loss count is displayed. The player can then begin the game and choose a move ("Hit" or "Stand") in the red box at the bottom left. The player can also see his current hand in the blue box at the bottom right. The player can see the gameplay details in the green box at the top.
